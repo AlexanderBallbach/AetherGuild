@@ -18,81 +18,87 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Main Initializer ---
     function init() {
-        // Initialize map first to ensure it loads even if other services fail.
-        initMap();
-        
-        // Initialize Firebase using the compat libraries
         firebase.initializeApp(firebaseConfig);
         auth = firebase.auth();
         db = firebase.firestore();
 
-        // Connect to emulators
-        auth.useEmulator('http://127.0.0.1:9099');
-        db.useEmulator('127.0.0.1', 8080);
-
+        if (document.getElementById('map')) {
+            initMapPage();
+        } else if (document.getElementById('wiki-content-full')) {
+            initAetherpediaPage();
+        }
+        
         initAuth();
-        initUI();
     }
 
-    // --- Initializers ---
+    // --- Page-Specific Initializers ---
+    function initMapPage() {
+        initMap();
+        initUI();
+        startDataSubscription();
+    }
+
+    function initAetherpediaPage() {
+        const params = new URLSearchParams(window.location.search);
+        const docId = params.get('id');
+        if (docId) {
+            fetchAndDisplayEntity(docId);
+        } else {
+            // Optional: Display general stats if no specific ID is provided
+            fetchAndDisplayRegistryStats();
+        }
+    }
+
+    // --- Authentication ---
+    function initAuth() {
+        auth.onAuthStateChanged(u => {
+            user = u;
+            if (user && document.getElementById('log-experience-btn')) {
+                document.getElementById('log-experience-btn').disabled = false;
+            } else if (!user) {
+                auth.signInAnonymously().catch(err => console.error("Anonymous sign-in failed", err));
+            }
+        });
+    }
+
+    // --- Map Page Functions ---
     function initMap() {
         map = L.map('map', { zoomControl: false, center: [20, 0], zoom: 2 });
         L.control.scale({ imperial: false }).addTo(map);
-        
         const savedMapLayer = localStorage.getItem('mapLayer') || 'Dark';
         setTileLayer(savedMapLayer);
-
         navigator.geolocation.getCurrentPosition(
             (pos) => map.flyTo([pos.coords.latitude, pos.coords.longitude], 7),
             () => console.log("Geolocation permission denied. Defaulting to global view.")
         );
     }
 
-    function initAuth() {
-        auth.onAuthStateChanged(u => {
-            user = u;
-            if (user) {
-                document.getElementById('log-experience-btn').disabled = false;
-                startDataSubscription();
-            } else {
-                auth.signInAnonymously().catch(err => console.error("Anonymous sign-in failed", err));
-            }
-        });
-    }
-
     function initUI() {
         const savedTheme = localStorage.getItem('theme') || 'aether';
         setTheme(savedTheme);
         document.getElementById('theme-select').value = savedTheme;
-
         const savedMarkerColor = localStorage.getItem('markerColor') || '#ff00ff';
         document.getElementById('marker-color-input').value = savedMarkerColor;
         setMarkerColor(savedMarkerColor);
-
         buildLayerControls();
         attachEventListeners();
-
-        // Set initial panel states to be hidden
-        document.getElementById('sidebar').style.transform = 'translateX(100%)';
         document.getElementById('settings-sidebar').style.transform = 'translateX(100%)';
-        document.getElementById('map-layers-panel').style.transform = 'translateY(calc(100% + 6rem))';
+        document.getElementById('map-layers-panel').classList.add('panel-hidden-bottom');
         document.getElementById('advanced-settings-modal').style.display = 'none';
         document.getElementById('submit-modal').style.display = 'none';
     }
 
-    // --- Event Listeners Setup ---
     function attachEventListeners() {
         document.getElementById('log-experience-btn').addEventListener('click', () => toggleModal('submit-modal'));
         document.getElementById('toggle-layers-btn').addEventListener('click', toggleMapLayers);
         document.getElementById('toggle-settings-btn').addEventListener('click', toggleSettings);
-        document.getElementById('close-sidebar-btn').addEventListener('click', closeSidebar);
         document.getElementById('close-settings-btn').addEventListener('click', toggleSettings);
         document.getElementById('theme-select').addEventListener('change', (e) => setTheme(e.target.value));
         document.getElementById('advanced-settings-btn').addEventListener('click', () => toggleModal('advanced-settings-modal'));
         document.getElementById('close-advanced-settings-btn').addEventListener('click', () => toggleModal('advanced-settings-modal'));
         document.getElementById('marker-color-input').addEventListener('input', (e) => setMarkerColor(e.target.value));
-        const weatherCheckbox = document.querySelector('input[name="overlay-layer"][value="Weather"]');
         document.getElementById('enable-weather-layers-checkbox').addEventListener('change', (e) => {
+            const weatherCheckbox = document.querySelector('input[name="overlay-layer"][value="Weather"]');
             if(weatherCheckbox) weatherCheckbox.parentElement.style.display = e.target.checked ? 'flex' : 'none';
         });
         document.getElementById('close-submit-modal-btn').addEventListener('click', () => toggleModal('submit-modal'));
@@ -101,7 +107,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('map-layers-container').addEventListener('change', handleLayerChange);
     }
 
-    // --- Data & Map Logic ---
     function startDataSubscription() {
         db.collection('phenomena').onSnapshot(snapshot => {
             snapshot.docChanges().forEach(change => {
@@ -122,7 +127,6 @@ document.addEventListener('DOMContentLoaded', () => {
         'Weather': L.tileLayer('https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=5905299949788d3725d257e44e789d38', { attribution: '&copy; OpenWeatherMap' }),
         'Borders': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }),
         'Place Names': L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png', { attribution: '&copy; OpenStreetMap & CartoDB' }),
-        'Graticule': L.graticule(),
     };
 
     function setTileLayer(name) {
@@ -148,47 +152,22 @@ document.addEventListener('DOMContentLoaded', () => {
         marker.bindPopup(popupContent);
         marker.on('dblclick', () => map.flyTo([data.lat, data.lng], 10));
         marker.on('popupopen', () => {
-            document.getElementById(`popup-details-${id}`).onclick = () => openSidebarWithData(data);
+            document.getElementById(`popup-details-${id}`).onclick = () => window.location.href = `aetherpedia.html?id=${id}`;
         });
     }
 
-    // --- UI Handlers ---
     function toggleModal(id) {
         const modal = document.getElementById(id);
         if (modal) modal.style.display = (modal.style.display === 'none' || modal.style.display === '') ? 'flex' : 'none';
     }
 
     function toggleMapLayers() {
-        const panel = document.getElementById('map-layers-panel');
-        if (panel.style.transform === 'translateY(0%)') {
-            panel.style.transform = 'translateY(calc(100% + 6rem))';
-        } else {
-            panel.style.transform = 'translateY(0%)';
-        }
+        document.getElementById('map-layers-panel').classList.toggle('panel-hidden-bottom');
     }
 
     function toggleSettings() {
         const panel = document.getElementById('settings-sidebar');
-        if (panel.style.transform === 'translateX(0%)') {
-            panel.style.transform = 'translateX(100%)';
-        } else {
-            panel.style.transform = 'translateX(0%)';
-        }
-    }
-
-    function closeSidebar() {
-        document.getElementById('sidebar').style.transform = 'translateX(100%)';
-    }
-
-    function setTheme(theme) {
-        document.body.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-    }
-
-    function setMarkerColor(color) {
-        markerColor = color;
-        localStorage.setItem('markerColor', color);
-        Object.values(allMarkers).forEach(marker => marker.setStyle({ color: markerColor, fillColor: markerColor }));
+        panel.style.transform = panel.style.transform === 'translateX(0%)' ? 'translateX(100%)' : 'translateX(0%)';
     }
 
     function buildLayerControls() {
@@ -230,26 +209,62 @@ document.addEventListener('DOMContentLoaded', () => {
         }, () => alert("Could not get your location."));
     }
 
-    async function openSidebarWithData(data) {
-        document.getElementById('p-name').innerText = data.name;
-        document.getElementById('p-coord').innerText = `${data.lat.toFixed(3)}, ${data.lng.toFixed(3)}`;
-        document.getElementById('p-desc').innerText = data.description;
-        document.getElementById('p-type').innerText = data.type || "Unclassified";
-        document.getElementById('p-val').innerText = `${data.validity || Math.floor(Math.random()*40+30)}%`;
-        document.getElementById('p-emf').innerText = data.emf || '--';
-        document.getElementById('p-temp').innerText = data.temp || '--';
-        document.getElementById('p-noise').innerText = data.noise || '--';
-        document.getElementById('sidebar').style.transform = 'translateX(0%)';
-
-        // Fetch environmental data
+    // --- Aetherpedia Page Functions ---
+    async function fetchAndDisplayEntity(docId) {
+        try {
+            const doc = await db.collection('phenomena').doc(docId).get();
+            if (doc.exists) {
+                const data = doc.data();
+                document.getElementById('p-name').innerText = data.name;
+                document.getElementById('p-infobox-title').innerText = data.name;
+                document.getElementById('p-desc').innerText = data.description;
+                document.getElementById('p-type').innerText = data.type || "Unclassified";
+                document.getElementById('p-coord').innerText = `${data.lat.toFixed(3)}, ${data.lng.toFixed(3)}`;
+                document.getElementById('p-val').innerText = `${data.validity || Math.floor(Math.random()*40+30)}%`;
+                document.getElementById('p-emf').innerText = data.emf || '--';
+                document.getElementById('p-temp').innerText = data.temp || '--';
+                document.getElementById('p-noise').innerText = data.noise || '--';
+                // Fetch environmental data
+                fetchEnvironmentalData(data.lat, data.lng);
+            } else {
+                console.error("No such document!");
+                document.getElementById('p-name').innerText = "Error: Entity not found";
+            }
+        } catch (error) {
+            console.error("Error getting document:", error);
+        }
+    }
+    
+    async function fetchEnvironmentalData(lat, lng) {
         document.getElementById('p-weather').innerText = 'Loading...';
         document.getElementById('p-moon').innerText = 'Loading...';
         try {
-            const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${data.lat}&longitude=${data.lng}&current_weather=true`);
+            const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`);
             const weather = await response.json();
             document.getElementById('p-weather').innerText = `${weatherCodeToString(weather.current_weather.weathercode)} (${weather.current_weather.temperature}°C)`;
         } catch (e) { document.getElementById('p-weather').innerText = 'Error'; }
         document.getElementById('p-moon').innerText = moonPhaseToString(SunCalc.getMoonIllumination(new Date()).phase);
+    }
+
+    function fetchAndDisplayRegistryStats() {
+        db.collection('phenomena').get().then(snapshot => {
+            document.getElementById('stats-total').innerText = snapshot.size;
+            // Add more specific stats if needed, e.g., by querying for specific fields
+            document.getElementById('stats-verified').innerText = '--'; // Placeholder
+            document.getElementById('stats-pending').innerText = '--'; // Placeholder
+        });
+    }
+
+    // --- Theming & Helpers ---
+    function setTheme(theme) {
+        document.body.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+    }
+
+    function setMarkerColor(color) {
+        markerColor = color;
+        localStorage.setItem('markerColor', color);
+        Object.values(allMarkers).forEach(marker => marker.setStyle({ color: markerColor, fillColor: markerColor }));
     }
 
     function moonPhaseToString(p){if(p<.03||p>.97)return'New Moon';if(p<.22)return'Waxing Crescent';if(p<.28)return'First Quarter';if(p<.47)return'Waxing Gibbous';if(p<.53)return'Full Moon';if(p<.72)return'Waning Gibbous';if(p<.78)return'Last Quarter';return'Waning Crescent';}

@@ -8,26 +8,28 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="themes.css" />
     <link rel="stylesheet" href="style.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/leaflet-graticule@0.0.1/L.Graticule.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.8.0/suncalc.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.8.0/suncalc.min.js" defer></script>
 </head>
 <body>
 
     <!-- Header Navigation -->
     <nav class="header-nav">
         <div class="flex items-center gap-4">
-            <svg width="40" height="40" viewBox="0 0 100 100" class="text-primary">
-                <path d="M50 5 L95 25 L95 75 L50 95 L5 75 L5 25 Z" fill="none" stroke="currentColor" stroke-width="2"/>
-                <path d="M50 5 L50 95 M95 25 L5 75 M95 75 L5 25" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3"/>
-                <circle cx="50" cy="50" r="10" fill="currentColor" />
-            </svg>
-            <div>
-                <h1 class="text-xl font-bold tracking-[0.2em] uppercase text-primary">Aether Atlas</h1>
-                <p class="text-[9px] tracking-[0.3em] text-muted uppercase">Aether Guild Global Network</p>
-            </div>
+            <a href="index.html" class="flex items-center gap-4">
+                <svg width="40" height="40" viewBox="0 0 100 100" class="text-primary">
+                    <path d="M50 5 L95 25 L95 75 L50 95 L5 75 L5 25 Z" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <path d="M50 5 L50 95 M95 25 L5 75 M95 75 L5 25" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3"/>
+                    <circle cx="50" cy="50" r="10" fill="currentColor" />
+                </svg>
+                <div>
+                    <h1 class="text-xl font-bold tracking-[0.2em] uppercase text-primary">Aether Atlas</h1>
+                    <p class="text-[9px] tracking-[0.3em] text-muted uppercase">Aether Guild Global Network</p>
+                </div>
+            </a>
         </div>
         <div class="flex gap-8 items-center">
+            <a href="aetherpedia.html" class="nav-button">Aetherpedia</a>
             <button id="log-experience-btn" class="nav-button" disabled>Log Experience</button>
             <button class="nav-button-primary">Guild Portal</button>
         </div>
@@ -48,47 +50,6 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
         </button>
-    </div>
-
-    <!-- Sidebar: Wiki View -->
-    <div id="sidebar" class="panel sidebar">
-        <button id="close-sidebar-btn" class="close-button">✕</button>
-        <div id="sidebar-content" class="space-y-8 mt-4">
-            <header>
-                <div class="mb-4"><span id="p-badge" class="badge">Verified Case</span></div>
-                <h2 id="p-name" class="text-4xl font-light tracking-tight mb-2 uppercase">Entity Name</h2>
-                <p class="text-[10px] text-muted tracking-widest uppercase mb-4">Coordinate: <span id="p-coord" class="text-primary">0, 0</span></p>
-            </header>
-            <section class="info-section">
-                <h3 class="section-header flex justify-between">Witness Account<span id="p-type" class="text-primary italic">Unknown</span></h3>
-                <p id="p-desc" class="text-sm text-secondary leading-relaxed">Select a manifestation on the map to initialize the Aether Wiki interface.</p>
-            </section>
-            <section>
-                <h3 class="text-lg font-light text-primary uppercase tracking-tighter mb-4">Environmental Data</h3>
-                <div class="grid grid-cols-2 gap-4 text-xs">
-                    <div class="data-box"><span class="data-label">Weather</span><span id="p-weather" class="font-medium">--</span></div>
-                    <div class="data-box"><span class="data-label">Moon Phase</span><span id="p-moon" class="font-medium">--</span></div>
-                    <div class="data-box"><span class="data-label">KP-Index</span><span id="p-kp" class="font-medium">--</span></div>
-                    <div class="data-box"><span class="data-label">Geology</span><span id="p-geology" class="font-medium">--</span></div>
-                </div>
-            </section>
-            <section>
-                <h3 class="text-lg font-light text-primary uppercase tracking-tighter mb-4">Sensor Readings</h3>
-                <div class="grid grid-cols-3 gap-4 text-xs">
-                    <div class="data-box text-center"><span class="data-label">EMF (mG)</span><span id="p-emf" class="text-xl font-medium">--</span></div>
-                    <div class="data-box text-center"><span class="data-label">Temp (C)</span><span id="p-temp" class="text-xl font-medium">--</span></div>
-                    <div class="data-box text-center"><span class="data-label">Noise (dB)</span><span id="p-noise" class="text-xl font-medium">--</span></div>
-                </div>
-            </section>
-            <section>
-                <h3 class="text-lg font-light text-primary uppercase tracking-tighter mb-4">Validity</h3>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="data-box"><span class="text-[9px] text-muted uppercase block mb-1">Validity Score</span><span id="p-val" class="text-sm font-medium">--</span></div>
-                    <div class="data-box"><span class="text-[9px] text-muted uppercase block mb-1">Peer Review</span><span class="text-sm font-medium text-yellow-400">Pending</span></div>
-                </div>
-            </section>
-            <button class="button-outline w-full">Full Research Log</button>
-        </div>
     </div>
 
     <!-- Settings Sidebar -->
@@ -194,12 +155,12 @@
     </div>
 
     <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js" defer></script>
 
     <!-- App Script -->
-    <script src="app.js"></script>
+    <script src="app.js" defer></script>
 
 </body>
 </html>

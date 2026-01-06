@@ -327,12 +327,87 @@ select.input-field option {
     right: 2rem;
     max-width: 300px;
     border-radius: 0.75rem;
-    transform: translateY(calc(100% + 6rem));
+    z-index: 1000;
+    transform: translateY(0);
     transition: transform 0.5s ease;
 }
 
-.graticule {
-    stroke: var(--color-primary-border);
-    stroke-width: 0.5px;
-    fill: none;
+.panel-hidden-bottom {
+    transform: translateY(calc(100% + 6rem));
+}
+
+/* --- Wiki Layout --- */
+.wiki-layout {
+    display: grid;
+    grid-template-columns: 1fr 250px;
+    gap: 2rem;
+}
+
+.wiki-header {
+    border-bottom: 1px solid var(--color-primary-border);
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+}
+
+.wiki-title {
+    font-size: 2.5rem; 
+    font-weight: 200; 
+    line-height: 1;
+    letter-spacing: -0.05em; 
+    color: var(--color-text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.wiki-section p {
+    font-family: serif;
+    color: var(--color-text-secondary);
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.wiki-infobox {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-primary-border);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    font-size: 0.8rem;
+}
+
+.infobox-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    border-bottom: 1px solid var(--color-primary-border);
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.infobox-subtitle {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text-muted);
+    border-bottom: 1px solid var(--color-primary-border);
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.infobox-group {
+    margin-bottom: 1rem;
+}
+
+.infobox-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.infobox-label {
+    color: var(--color-text-muted);
+}
+
+.infobox-value {
+    color: var(--color-text-primary);
+    font-weight: 500;
 }

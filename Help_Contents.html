@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help:Contents - Aetherpedia</title>
+    <link href="https://fonts.googleapis.com/css2?family=Exo:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="themes.css" />
+    <link rel="stylesheet" href="wiki-style.css" />
+</head>
+<body data-theme="aether">
+
+    <header id="wiki-header">
+        <form id="search-form">
+            <div id="search-container">
+                <input type="search" placeholder="Search Aetherpedia & Wikipedia..." id="searchInput" autocomplete="off">
+                <button type="submit" class="search-submit-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                </button>
+                <div id="search-results-container" style="display: none;"></div>
+            </div>
+        </form>
+    </header>
+
+    <div id="wiki-container">
+        <nav id="left-navigation">
+            <div class="vector-menu">
+                <h3>Navigation</h3>
+                <ul>
+                    <li><a href="/aetherpedia.html">Main page</a></li>
+                    <li><a href="/search.html">Search</a></li>
+                    <li><a href="/Help_Contents.html">Help</a></li>
+                    <li><a href="/Aetherpedia_About.html">About Aetherpedia</a></li>
+                </ul>
+            </div>
+             <div class="vector-menu">
+                <h3>Recent Topics</h3>
+                <ul>
+                    <li><a href="/aetherpedia.html?article=Chaos_Magick">Chaos Magick</a></li>
+                    <li><a href="/aetherpedia.html?article=Stone_Tape_Theory">Stone Tape Theory</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <main id="content-container">
+            <div id="content-tabs">
+                <ul>
+                    <li class="selected"><a href="#">Help page</a></li>
+                </ul>
+            </div>
+
+            <div id="bodyContent">
+                <h1 id="firstHeading" class="firstHeading">Help:Contents</h1>
+                <div id="siteSub">Guidance for using the Aetherpedia.</div>
+                
+                <div class="wiki-main-content">
+                    <h2>Navigating Aetherpedia</h2>
+                    <p>The primary method of navigation is the central search bar. You can either use the live search dropdown that appears as you type, or you can press Enter or click the magnifying glass to go to a dedicated search results page.</p>
+
+                    <h2>Searching & Importing</h2>
+                    <p>The <a href="/search.html">Search Page</a> shows results from both Aetherpedia and Wikipedia. For Wikipedia results, you can click the "Import" button to create a local copy of that article in the Aetherpedia. This allows for community additions and archival.</p>
+
+                    <h2>Updating Articles</h2>
+                    <p>If an Aetherpedia article was originally imported from Wikipedia, an "Update from Wikipedia" button will appear in the top tab bar. Clicking this will fetch the latest version of the article, overwriting the existing local copy. This is useful for keeping our archives current.</p>
+
+                </div>
+            </div>
+            
+            <footer class="footer">
+                Aetherpedia is a project by the Aether Guild.
+            </footer>
+        </main>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js" defer></script>
+    <script src="aetherpedia.js" defer></script>
+</body>
+</html>
