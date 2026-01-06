@@ -2,14 +2,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Firebase Config ---
     const firebaseConfig = {
-        // IMPORTANT: Your API key is exposed here. This is a security risk.
-        // You should secure this key, for example, by using environment variables or a backend proxy.
-        "projectId": "aetherguild-37084708-fa531",
-        "appId": "1:1020806444380:web:ea9a30f7705a294fc1fd99",
-        "storageBucket": "aetherguild-37084708-fa531.firebasestorage.app",
-        "apiKey": "YOUR_API_KEY", // Replace with a secure method of storing your API key
-        "authDomain": "aetherguild-37084708-fa531.firebaseapp.com",
-        "messagingSenderId": "1020806444380"
+        apiKey: "AIzaSyAEven_LdLIDeHaCI3ayto4XVDt2hBMOx4",
+        authDomain: "aetherguild-37084708-fa531.firebaseapp.com",
+        projectId: "aetherguild-37084708-fa531",
+        storageBucket: "aetherguild-37084708-fa531.firebasestorage.app",
+        messagingSenderId: "1020806444380",
+        appId: "1:1020806444380:web:ea9a30f7705a294fc1fd99"
     };
 
     // --- Global State & Elements ---

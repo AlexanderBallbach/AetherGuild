@@ -6,11 +6,7 @@
   packages = [
     pkgs.nodejs_20 # Pinned to Node.js 20
     pkgs.google-cloud-sdk
-    (pkgs.runCommand "firebase-tools" {} ''
-      mkdir -p $out/bin
-      npm install -g firebase-tools
-      ln -s $out/lib/node_modules/firebase-tools/bin/firebase $out/bin/firebase
-    '')
+    pkgs.nodePackages.firebase-tools
   ];
 
   # Sets environment variables in the workspace
