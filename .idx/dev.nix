@@ -13,10 +13,11 @@
   env = {};
 
   # Defines services that should be running in the background
-  services = {};
+  idx.extensions = [
+  ];
 
   # Workspace lifecycle hooks
-  workspace = {
+  idx.workspace = {
     # Runs when a workspace is first created
     onCreate = {
       # Example: install JS dependencies from NPM
