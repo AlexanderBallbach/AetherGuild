@@ -1,0 +1,338 @@
+/* style.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
+
+body {
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+}
+
+#map { 
+    height: 100vh; 
+    width: 100vw; 
+    background: var(--color-surface); 
+    z-index: 1; 
+}
+
+.panel {
+    background: var(--color-panel);
+    backdrop-filter: blur(25px);
+    border: 1px solid var(--color-primary-border);
+    border-radius: 0.75rem; /* rounded-lg */
+}
+
+.text-primary {
+    color: var(--color-primary);
+    text-shadow: 0 0 8px var(--color-primary-accent);
+}
+
+.text-secondary {
+    color: var(--color-text-secondary);
+}
+
+.text-muted {
+    color: var(--color-text-muted);
+}
+
+.header-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    padding: 1.5rem; /* p-6 */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-image: linear-gradient(to bottom, var(--color-background), transparent);
+}
+
+.nav-button {
+    font-size: 0.75rem; /* text-xs */
+    letter-spacing: 0.1em; /* tracking-widest */
+    text-transform: uppercase;
+    border-bottom: 1px solid transparent;
+    transition: all 0.2s;
+    padding-bottom: 4px;
+    color: var(--color-text-secondary);
+}
+.nav-button:hover {
+    border-bottom-color: var(--color-primary);
+    color: var(--color-primary);
+}
+.nav-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.nav-icon-button {
+    color: var(--color-text-secondary);
+    transition: all 0.2s;
+}
+.nav-icon-button:hover {
+    color: var(--color-primary);
+}
+
+.nav-button-primary {
+    padding-left: 1.25rem; /* px-5 */
+    padding-right: 1.25rem; /* px-5 */
+    padding-top: 0.5rem; /* py-2 */
+    padding-bottom: 0.5rem; /* py-2 */
+    background-color: var(--color-primary);
+    color: var(--color-background);
+    font-size: 0.75rem; /* text-xs */
+    font-weight: 700; /* font-bold */
+    letter-spacing: 0.1em; /* tracking-widest */
+    text-transform: uppercase;
+    border-radius: 0.5rem; /* rounded-md */
+    transition: all 0.2s;
+}
+.nav-button-primary:hover {
+    filter: brightness(1.1);
+}
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 100%;
+    max-width: 450px;
+    z-index: 1001;
+    transform: translateX(100%);
+    transition: transform 0.5s ease;
+    padding: 2.5rem; /* p-10 */
+    overflow-y: auto;
+    border-left: 1px solid var(--color-primary-border);
+}
+
+.close-button {
+    position: absolute;
+    top: 1.5rem; /* top-6 */
+    right: 1.5rem; /* right-6 */
+    color: var(--color-text-muted);
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+.close-button:hover {
+    color: var(--color-text-primary);
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--color-primary);
+    font-size: 9px;
+    color: var(--color-primary);
+    font-weight: 700;
+    letter-spacing: 0.05em; /* tracking-tighter */
+    text-transform: uppercase;
+    border-radius: 9999px; /* rounded-full */
+}
+
+.info-section {
+    padding: 1rem; /* p-4 */
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem; /* rounded-lg */
+}
+
+.section-header {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem; /* mb-2 */
+    letter-spacing: 0.1em; /* tracking-widest */
+}
+
+.data-box {
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: 0.75rem; /* p-3 */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem; /* rounded-lg */
+}
+
+.data-label {
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    display: block;
+    font-size: 10px;
+    margin-bottom: 4px;
+}
+
+.button-outline {
+    width: 100%;
+    padding: 1rem 0;
+    background-color: transparent;
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    font-size: 0.75rem; /* text-xs */
+    font-weight: 700; /* font-bold */
+    letter-spacing: 0.1em; /* tracking-widest */
+    text-transform: uppercase;
+    border-radius: 0.5rem; /* rounded-md */
+    transition: all 0.2s;
+}
+.button-outline:hover {
+    background-color: var(--color-primary);
+    color: var(--color-background);
+}
+
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: none; /* toggled by JS */
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0,0,0,0.85);
+    padding: 1.5rem; /* p-6 */
+    backdrop-filter: blur(10px);
+}
+
+.modal-content {
+    width: 100%;
+    max-width: 600px;
+    padding: 2.5rem; /* p-10 */
+}
+
+.input-label {
+    display: block;
+    font-size: 10px;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem; /* mb-2 */
+}
+
+.input-field {
+    width: 100%;
+    background-color: var(--color-surface);
+    border-bottom: 1px solid var(--color-primary-border);
+    padding: 0.75rem; /* p-3 */
+    outline: none;
+    transition: all 0.2s;
+    border-radius: 0.375rem 0.375rem 0 0; /* rounded-t-md */
+}
+.input-field:focus {
+    border-bottom-color: var(--color-primary);
+    background-color: var(--color-panel);
+}
+
+.input-field-textarea {
+    width: 100%;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-primary-border);
+    padding: 1rem; /* p-4 */
+    outline: none;
+    transition: all 0.2s;
+    border-radius: 0.375rem; /* rounded-md */
+    line-height: 1.6;
+}
+.input-field-textarea:focus {
+    border-color: var(--color-primary);
+    background-color: var(--color-panel);
+}
+
+.button-secondary {
+    font-size: 0.75rem; /* text-xs */
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    transition: all 0.2s;
+}
+.button-secondary:hover {
+    color: var(--color-text-primary);
+}
+
+.button-primary {
+    padding: 0.75rem 2rem; /* px-8 py-3 */
+    background-color: var(--color-primary);
+    color: var(--color-background);
+    font-weight: 700; /* font-bold */
+    text-transform: uppercase;
+    font-size: 10px; /* text-[10px] */
+    letter-spacing: 0.1em; /* tracking-widest */
+    border-radius: 0.375rem; /* rounded-md */
+    transition: all 0.2s;
+}
+.button-primary:hover {
+    filter: brightness(1.1);
+}
+
+.leaflet-container {
+    background: var(--color-surface) !important;
+}
+
+/* --- Leaflet Popup Customization -- */
+.leaflet-popup-content-wrapper {
+    background: var(--color-panel) !important;
+    color: var(--color-text-primary) !important;
+    border: 1px solid var(--color-primary-border) !important;
+    border-radius: 0.75rem !important;
+    backdrop-filter: blur(10px);
+}
+.leaflet-popup-tip {
+    background: var(--color-panel) !important;
+}
+.leaflet-popup-close-button {
+    color: var(--color-text-muted) !important;
+    padding: 8px 8px 0 0 !important;
+}
+.map-popup {
+    padding: 0.5rem;
+}
+
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--color-background); }
+::-webkit-scrollbar-thumb { background: var(--color-primary); border-radius: 10px; }
+
+select.input-field option {
+    background-color: var(--color-surface);
+    color: var(--color-text-primary);
+}
+
+.map-controls-container {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    z-index: 1000;
+}
+
+.map-control-button {
+    background: var(--color-panel);
+    border: 1px solid var(--color-primary-border);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    color: var(--color-text-secondary);
+    transition: all 0.2s;
+}
+
+.map-control-button:hover {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.map-layers-panel {
+    position: fixed;
+    bottom: 6rem;
+    right: 2rem;
+    max-width: 300px;
+    border-radius: 0.75rem;
+    transform: translateY(calc(100% + 6rem));
+    transition: transform 0.5s ease;
+}
+
+.graticule {
+    stroke: var(--color-primary-border);
+    stroke-width: 0.5px;
+    fill: none;
+}

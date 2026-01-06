@@ -6,152 +6,160 @@
     <title>Aether Atlas | Global Registry</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="themes.css" />
+    <link rel="stylesheet" href="style.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-graticule@0.0.1/L.Graticule.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.8.0/suncalc.min.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;700&display=swap');
-        body { background-color: #050505; color: #e5e7eb; font-family: 'Space Grotesk', sans-serif; overflow: hidden; }
-        #map { height: 100vh; width: 100vw; background: #0a0a0a; z-index: 1; }
-        .clinical-panel {
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(25px);
-            border: 1px solid rgba(34, 211, 238, 0.2);
-        }
-        .text-ion { color: #22d3ee; text-shadow: 0 0 8px rgba(34, 211, 238, 0.4); }
-        .bg-ion { background-color: #22d3ee; }
-        .border-ion { border-color: rgba(34, 211, 238, 0.5); }
-        .leaflet-container { background: #0a0a0a !important; }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: #050505; }
-        ::-webkit-scrollbar-thumb { background: #22d3ee; border-radius: 10px; }
-    </style>
 </head>
 <body>
 
     <!-- Header Navigation -->
-    <nav class="fixed top-0 left-0 w-full z-[1000] p-6 flex justify-between items-center bg-gradient-to-b from-black to-transparent">
+    <nav class="header-nav">
         <div class="flex items-center gap-4">
-            <svg width="40" height="40" viewBox="0 0 100 100" class="text-ion">
+            <svg width="40" height="40" viewBox="0 0 100 100" class="text-primary">
                 <path d="M50 5 L95 25 L95 75 L50 95 L5 75 L5 25 Z" fill="none" stroke="currentColor" stroke-width="2"/>
                 <path d="M50 5 L50 95 M95 25 L5 75 M95 75 L5 25" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3"/>
                 <circle cx="50" cy="50" r="10" fill="currentColor" />
             </svg>
             <div>
-                <h1 class="text-xl font-bold tracking-[0.2em] uppercase text-ion">Aether Atlas</h1>
-                <p class="text-[9px] tracking-[0.3em] text-gray-500 uppercase">Aether Guild Global Network</p>
+                <h1 class="text-xl font-bold tracking-[0.2em] uppercase text-primary">Aether Atlas</h1>
+                <p class="text-[9px] tracking-[0.3em] text-muted uppercase">Aether Guild Global Network</p>
             </div>
         </div>
-        <div class="flex gap-6 items-center">
-            <button onclick="toggleModal('submit-modal')" class="text-xs tracking-widest uppercase border-b border-ion/30 hover:border-ion transition pb-1">Log Experience</button>
-            <button class="px-5 py-2 bg-ion text-black text-xs font-bold tracking-widest uppercase hover:brightness-110 transition">Guild Portal</button>
+        <div class="flex gap-8 items-center">
+            <button id="log-experience-btn" class="nav-button" disabled>Log Experience</button>
+            <button class="nav-button-primary">Guild Portal</button>
         </div>
     </nav>
     
     <div id="map"></div>
 
+    <!-- Map Controls -->
+    <div class="map-controls-container">
+        <button id="toggle-layers-btn" class="map-control-button">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg>
+        </button>
+        <button id="toggle-settings-btn" class="map-control-button">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+        </button>
+    </div>
+
     <!-- Sidebar: Wiki View -->
-    <div id="sidebar" class="fixed top-0 right-0 h-full w-full md:w-[450px] z-[1001] clinical-panel translate-x-full transition-transform duration-500 p-10 overflow-y-auto border-l border-cyan-500/20">
-        <button onclick="closeSidebar()" class="absolute top-6 right-6 text-gray-500 hover:text-ion">✕</button>
-        
+    <div id="sidebar" class="panel sidebar">
+        <button id="close-sidebar-btn" class="close-button">✕</button>
         <div id="sidebar-content" class="space-y-8 mt-4">
             <header>
-                <div class="mb-4">
-                    <span id="p-badge" class="px-2 py-0.5 border border-cyan-500 text-[9px] text-cyan-400 font-bold tracking-tighter uppercase">Verified Case</span>
-                </div>
+                <div class="mb-4"><span id="p-badge" class="badge">Verified Case</span></div>
                 <h2 id="p-name" class="text-4xl font-light tracking-tight mb-2 uppercase">Entity Name</h2>
-                <p class="text-[10px] text-gray-500 tracking-widest uppercase mb-4">Coordinate: <span id="p-coord" class="text-white">0, 0</span></p>
+                <p class="text-[10px] text-muted tracking-widest uppercase mb-4">Coordinate: <span id="p-coord" class="text-primary">0, 0</span></p>
             </header>
-
-            <section class="p-4 bg-white/5 border border-white/10 rounded-sm">
-                <h3 class="text-[10px] font-bold text-gray-500 uppercase mb-2 tracking-widest flex justify-between">
-                    Witness Account 
-                    <span id="p-type" class="text-ion italic">Unknown</span>
-                </h3>
-                <p id="p-desc" class="text-sm text-gray-300 leading-relaxed">Select a manifestation on the map to initialize the Aether Wiki interface.</p>
+            <section class="info-section">
+                <h3 class="section-header flex justify-between">Witness Account<span id="p-type" class="text-primary italic">Unknown</span></h3>
+                <p id="p-desc" class="text-sm text-secondary leading-relaxed">Select a manifestation on the map to initialize the Aether Wiki interface.</p>
             </section>
-            
-            <!-- Environmental Data -->
             <section>
-                <h3 class="text-lg font-light text-ion uppercase tracking-tighter mb-4">Environmental Data</h3>
+                <h3 class="text-lg font-light text-primary uppercase tracking-tighter mb-4">Environmental Data</h3>
                 <div class="grid grid-cols-2 gap-4 text-xs">
-                    <div class="bg-white/5 p-3 border border-white/10">
-                        <span class="text-gray-500 uppercase block">Weather</span>
-                        <span id="p-weather" class="font-medium">--</span>
-                    </div>
-                    <div class="bg-white/5 p-3 border border-white/10">
-                        <span class="text-gray-500 uppercase block">Moon Phase</span>
-                        <span id="p-moon" class="font-medium">--</span>
-                    </div>
-                    <div class="bg-white/5 p-3 border border-white/10">
-                        <span class="text-gray-500 uppercase block">KP-Index</span>
-                        <span id="p-kp" class="font-medium">--</span>
-                    </div>
-                    <div class="bg-white/5 p-3 border border-white/10">
-                        <span class="text-gray-500 uppercase block">Geology</span>
-                        <span id="p-geology" class="font-medium">--</span>
-                    </div>
+                    <div class="data-box"><span class="data-label">Weather</span><span id="p-weather" class="font-medium">--</span></div>
+                    <div class="data-box"><span class="data-label">Moon Phase</span><span id="p-moon" class="font-medium">--</span></div>
+                    <div class="data-box"><span class="data-label">KP-Index</span><span id="p-kp" class="font-medium">--</span></div>
+                    <div class="data-box"><span class="data-label">Geology</span><span id="p-geology" class="font-medium">--</span></div>
                 </div>
             </section>
-            
-            <!-- Sensor Readings -->
             <section>
-                <h3 class="text-lg font-light text-ion uppercase tracking-tighter mb-4">Sensor Readings</h3>
+                <h3 class="text-lg font-light text-primary uppercase tracking-tighter mb-4">Sensor Readings</h3>
                 <div class="grid grid-cols-3 gap-4 text-xs">
-                    <div class="bg-white/5 p-3 border border-white/10 text-center">
-                        <span class="text-gray-500 uppercase block">EMF (mG)</span>
-                        <span id="p-emf" class="text-xl font-medium">--</span>
-                    </div>
-                    <div class="bg-white/5 p-3 border border-white/10 text-center">
-                        <span class="text-gray-500 uppercase block">Temp (C)</span>
-                        <span id="p-temp" class="text-xl font-medium">--</span>
-                    </div>
-                    <div class="bg-white/5 p-3 border border-white/10 text-center">
-                        <span class="text-gray-500 uppercase block">Noise (dB)</span>
-                        <span id="p-noise" class="text-xl font-medium">--</span>
-                    </div>
+                    <div class="data-box text-center"><span class="data-label">EMF (mG)</span><span id="p-emf" class="text-xl font-medium">--</span></div>
+                    <div class="data-box text-center"><span class="data-label">Temp (C)</span><span id="p-temp" class="text-xl font-medium">--</span></div>
+                    <div class="data-box text-center"><span class="data-label">Noise (dB)</span><span id="p-noise" class="text-xl font-medium">--</span></div>
                 </div>
             </section>
-
-            <!-- Validity & Peer Review -->
             <section>
-                 <h3 class="text-lg font-light text-ion uppercase tracking-tighter mb-4">Validity</h3>
+                <h3 class="text-lg font-light text-primary uppercase tracking-tighter mb-4">Validity</h3>
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-white/5 p-4 border border-white/10">
-                        <span class="text-[9px] text-gray-500 uppercase block mb-1">Validity Score</span>
-                        <span id="p-val" class="text-sm font-medium">--</span>
-                    </div>
-                    <div class="bg-white/5 p-4 border border-white/10">
-                        <span class="text-[9px] text-gray-500 uppercase block mb-1">Peer Review</span>
-                        <span class="text-sm font-medium text-yellow-400">Pending</span>
-                    </div>
+                    <div class="data-box"><span class="text-[9px] text-muted uppercase block mb-1">Validity Score</span><span id="p-val" class="text-sm font-medium">--</span></div>
+                    <div class="data-box"><span class="text-[9px] text-muted uppercase block mb-1">Peer Review</span><span class="text-sm font-medium text-yellow-400">Pending</span></div>
                 </div>
             </section>
+            <button class="button-outline w-full">Full Research Log</button>
+        </div>
+    </div>
 
-            <button class="w-full py-4 bg-transparent border border-ion text-ion text-xs font-bold tracking-widest uppercase hover:bg-ion hover:text-black transition">Full Research Log</button>
+    <!-- Settings Sidebar -->
+    <div id="settings-sidebar" class="panel sidebar" style="max-width: 300px;">
+        <button id="close-settings-btn" class="close-button">✕</button>
+        <div class="p-6 space-y-6">
+            <div>
+                <h2 class="text-2xl font-light text-primary uppercase tracking-tighter">Settings</h2>
+                <p class="text-[10px] text-muted uppercase tracking-widest">Customize your experience</p>
+            </div>
+            <div>
+                <label class="input-label">UI Theme</label>
+                <select id="theme-select" class="input-field">
+                    <option value="aether">Aether (Classic)</option>
+                    <option value="starship">Starship</option>
+                    <option value="corporate">Corporate</option>
+                    <option value="cyberpunk">Cyberpunk</option>
+                </select>
+            </div>
+            <div>
+                <button id="advanced-settings-btn" class="button-secondary">Advanced Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Map Layers Panel -->
+    <div id="map-layers-panel" class="panel map-layers-panel">
+        <div id="map-layers-container" class="p-4 space-y-4"></div>
+    </div>
+
+    <!-- Advanced Settings Modal -->
+    <div id="advanced-settings-modal" class="modal">
+        <div class="panel modal-content">
+            <div class="flex justify-between items-start mb-8">
+                <div>
+                    <h2 class="text-2xl font-light text-primary uppercase tracking-tighter">Advanced Settings</h2>
+                    <p class="text-[10px] text-muted uppercase tracking-widest">Fine-tune your map</p>
+                </div>
+                <button id="close-advanced-settings-btn" class="close-button">✕</button>
+            </div>
+            <div class="space-y-6">
+                <div>
+                    <label class="input-label">Marker Color</label>
+                    <input type="color" id="marker-color-input" value="#ff00ff" class="input-field">
+                </div>
+                <div>
+                    <label class="input-label">Enable Weather Layers</label>
+                    <input type="checkbox" id="enable-weather-layers-checkbox">
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Submission Modal -->
-    <div id="submit-modal" class="fixed inset-0 z-[2000] hidden flex items-center justify-center bg-black/95 p-6 backdrop-blur-md">
-        <div class="w-full max-w-xl clinical-panel p-10">
+    <div id="submit-modal" class="modal">
+        <div class="panel modal-content">
             <div class="flex justify-between items-start mb-8">
                 <div>
-                    <h2 class="text-2xl font-light text-ion uppercase tracking-tighter">Submit Field Report</h2>
-                    <p class="text-[10px] text-gray-500 uppercase tracking-widest">Protocol 1.0.4: Scientific Intake</p>
+                    <h2 class="text-2xl font-light text-primary uppercase tracking-tighter">Submit Field Report</h2>
+                    <p class="text-[10px] text-muted uppercase tracking-widest">Protocol 1.0.4: Scientific Intake</p>
                 </div>
-                <button onclick="toggleModal('submit-modal')" class="text-gray-500 hover:text-white">✕</button>
+                <button id="close-submit-modal-btn" class="close-button">✕</button>
             </div>
-
             <form id="reportForm" class="space-y-6">
                 <div>
-                    <label class="block text-[10px] text-gray-500 uppercase mb-2">Phenomena Name</label>
-                    <input type="text" id="formName" required placeholder="e.g. Minnetonka Lake Ghost" class="w-full bg-white/5 border-b border-white/20 p-3 focus:border-ion outline-none transition text-sm">
+                    <label class="input-label">Phenomena Name</label>
+                    <input type="text" id="formName" required placeholder="e.g. Minnetonka Lake Ghost" class="input-field">
                 </div>
                 <div>
-                    <label class="block text-[10px] text-gray-500 uppercase mb-2">Classification</label>
-                    <select id="formType" class="w-full bg-transparent border-b border-white/20 p-3 focus:border-ion outline-none text-sm cursor-pointer">
+                    <label class="input-label">Classification</label>
+                    <select id="formType" class="input-field">
                         <option value="Shadow Figure">Shadow Figure</option>
                         <option value="Residual Audio">Residual Audio</option>
                         <option value="Apparition">Visual Apparition</option>
@@ -160,35 +168,38 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-[10px] text-gray-500 uppercase mb-2">Observation Details</label>
-                    <textarea id="formDesc" rows="4" required placeholder="Describe triggers, sensations, and captured data..." class="w-full bg-white/5 border border-white/10 p-4 focus:border-ion outline-none text-sm leading-relaxed"></textarea>
+                    <label class="input-label">Observation Details</label>
+                    <textarea id="formDesc" rows="4" required placeholder="Describe triggers, sensations, and captured data..." class="input-field-textarea"></textarea>
                 </div>
-                
-                <!-- Sensor Data -->
                 <div class="grid grid-cols-3 gap-4">
                     <div>
-                        <label class="block text-[10px] text-gray-500 uppercase mb-2">EMF (mG)</label>
-                        <input type="number" id="formEmf" placeholder="0.0" class="w-full bg-white/5 border-b border-white/20 p-3 focus:border-ion outline-none transition text-sm">
+                        <label class="input-label">EMF (mG)</label>
+                        <input type="number" id="formEmf" placeholder="0.0" class="input-field">
                     </div>
                     <div>
-                        <label class="block text-[10px] text-gray-500 uppercase mb-2">Temp (°C)</label>
-                        <input type="number" id="formTemp" placeholder="18.0" class="w-full bg-white/5 border-b border-white/20 p-3 focus:border-ion outline-none transition text-sm">
+                        <label class="input-label">Temp (°C)</label>
+                        <input type="number" id="formTemp" placeholder="18.0" class="input-field">
                     </div>
                     <div>
-                        <label class="block text-[10px] text-gray-500 uppercase mb-2">Noise (dB)</label>
-                        <input type="number" id="formNoise" placeholder="40" class="w-full bg-white/5 border-b border-white/20 p-3 focus:border-ion outline-none transition text-sm">
+                        <label class="input-label">Noise (dB)</label>
+                        <input type="number" id="formNoise" placeholder="40" class="input-field">
                     </div>
                 </div>
-
                 <div class="flex justify-end gap-4 pt-4">
-                    <button type="button" onclick="toggleModal('submit-modal')" class="text-xs uppercase text-gray-500 hover:text-white">Cancel</button>
-                    <button type="submit" class="px-8 py-3 bg-ion text-black font-bold uppercase text-[10px] tracking-widest hover:brightness-110 transition">Broadcast Data</button>
+                    <button type="button" id="cancel-submit-btn" class="button-secondary">Cancel</button>
+                    <button type="submit" class="button-primary">Broadcast Data</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <script src="app.js?v=1" type="module"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <!-- App Script -->
+    <script src="app.js"></script>
 
 </body>
 </html>
