@@ -4,163 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aether Atlas | Global Registry</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="themes.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.8.0/suncalc.min.js" defer></script>
 </head>
 <body>
-
-    <!-- Header Navigation -->
-    <nav class="header-nav">
-        <div class="flex items-center gap-4">
-            <a href="index.html" class="flex items-center gap-4">
-                <svg width="40" height="40" viewBox="0 0 100 100" class="text-primary">
-                    <path d="M50 5 L95 25 L95 75 L50 95 L5 75 L5 25 Z" fill="none" stroke="currentColor" stroke-width="2"/>
-                    <path d="M50 5 L50 95 M95 25 L5 75 M95 75 L5 25" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3"/>
-                    <circle cx="50" cy="50" r="10" fill="currentColor" />
-                </svg>
-                <div>
-                    <h1 class="text-xl font-bold tracking-[0.2em] uppercase text-primary">Aether Atlas</h1>
-                    <p class="text-[9px] tracking-[0.3em] text-muted uppercase">Aether Guild Global Network</p>
-                </div>
-            </a>
-        </div>
-        <div class="flex gap-8 items-center">
-            <a href="aetherpedia.html" class="nav-button">Aetherpedia</a>
-            <button id="log-experience-btn" class="nav-button" disabled>Log Experience</button>
-            <button class="nav-button-primary">Guild Portal</button>
-        </div>
-    </nav>
-    
     <div id="map"></div>
-
-    <!-- Map Controls -->
-    <div class="map-controls-container">
-        <button id="toggle-layers-btn" class="map-control-button">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-            </svg>
-        </button>
-        <button id="toggle-settings-btn" class="map-control-button">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-        </button>
-    </div>
-
-    <!-- Settings Sidebar -->
-    <div id="settings-sidebar" class="panel sidebar" style="max-width: 300px;">
-        <button id="close-settings-btn" class="close-button">✕</button>
-        <div class="p-6 space-y-6">
-            <div>
-                <h2 class="text-2xl font-light text-primary uppercase tracking-tighter">Settings</h2>
-                <p class="text-[10px] text-muted uppercase tracking-widest">Customize your experience</p>
-            </div>
-            <div>
-                <label class="input-label">UI Theme</label>
-                <select id="theme-select" class="input-field">
-                    <option value="aether">Aether (Classic)</option>
-                    <option value="starship">Starship</option>
-                    <option value="corporate">Corporate</option>
-                    <option value="cyberpunk">Cyberpunk</option>
-                </select>
-            </div>
-            <div>
-                <button id="advanced-settings-btn" class="button-secondary">Advanced Settings</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Map Layers Panel -->
-    <div id="map-layers-panel" class="panel map-layers-panel">
-        <div id="map-layers-container" class="p-4 space-y-4"></div>
-    </div>
-
-    <!-- Advanced Settings Modal -->
-    <div id="advanced-settings-modal" class="modal">
-        <div class="panel modal-content">
-            <div class="flex justify-between items-start mb-8">
-                <div>
-                    <h2 class="text-2xl font-light text-primary uppercase tracking-tighter">Advanced Settings</h2>
-                    <p class="text-[10px] text-muted uppercase tracking-widest">Fine-tune your map</p>
-                </div>
-                <button id="close-advanced-settings-btn" class="close-button">✕</button>
-            </div>
-            <div class="space-y-6">
-                <div>
-                    <label class="input-label">Marker Color</label>
-                    <input type="color" id="marker-color-input" value="#ff00ff" class="input-field">
-                </div>
-                <div>
-                    <label class="input-label">Enable Weather Layers</label>
-                    <input type="checkbox" id="enable-weather-layers-checkbox">
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Submission Modal -->
-    <div id="submit-modal" class="modal">
-        <div class="panel modal-content">
-            <div class="flex justify-between items-start mb-8">
-                <div>
-                    <h2 class="text-2xl font-light text-primary uppercase tracking-tighter">Submit Field Report</h2>
-                    <p class="text-[10px] text-muted uppercase tracking-widest">Protocol 1.0.4: Scientific Intake</p>
-                </div>
-                <button id="close-submit-modal-btn" class="close-button">✕</button>
-            </div>
-            <form id="reportForm" class="space-y-6">
-                <div>
-                    <label class="input-label">Phenomena Name</label>
-                    <input type="text" id="formName" required placeholder="e.g. Minnetonka Lake Ghost" class="input-field">
-                </div>
-                <div>
-                    <label class="input-label">Classification</label>
-                    <select id="formType" class="input-field">
-                        <option value="Shadow Figure">Shadow Figure</option>
-                        <option value="Residual Audio">Residual Audio</option>
-                        <option value="Apparition">Visual Apparition</option>
-                        <option value="Poltergeist">Kinetic Movement</option>
-                        <option value="Other">Unclassified</option>
+    <div class="controls-container">
+        <button id="toggle-controls-btn" class="leaflet-bar" title="Toggle Controls">Hide</button>
+        <div id="controls-content">
+            <div class="control-section">
+                <h2><i class="fas fa-layer-group"></i> Base Layer</h2>
+                <div class="control-section-content">
+                    <select id="tile-layer-select">
+                        <option value="dark">Dark</option>
+                        <option value="satellite">Satellite</option>
+                        <option value="street">Street</option>
+                        <option value="terrain">Terrain</option>
                     </select>
                 </div>
-                <div>
-                    <label class="input-label">Observation Details</label>
-                    <textarea id="formDesc" rows="4" required placeholder="Describe triggers, sensations, and captured data..." class="input-field-textarea"></textarea>
+            </div>
+            <div class="control-section">
+                <h2><i class="fas fa-map-marker-alt"></i> Markers</h2>
+                <div class="control-section-content">
+                    <input type="text" id="marker-name" placeholder="Marker Name">
+                    <input type="color" id="marker-color" value="#007bff" title="Marker Color">
+                    <button id="add-marker-btn" class="button">Add Marker</button>
                 </div>
-                <div class="grid grid-cols-3 gap-4">
-                    <div>
-                        <label class="input-label">EMF (mG)</label>
-                        <input type="number" id="formEmf" placeholder="0.0" class="input-field">
-                    </div>
-                    <div>
-                        <label class="input-label">Temp (°C)</label>
-                        <input type="number" id="formTemp" placeholder="18.0" class="input-field">
-                    </div>
-                    <div>
-                        <label class="input-label">Noise (dB)</label>
-                        <input type="number" id="formNoise" placeholder="40" class="input-field">
-                    </div>
+            </div>
+            <div class="control-section">
+                <h2><i class="fas fa-list-ul"></i> Marker List</h2>
+                <ul id="marker-list"></ul>
+            </div>
+            <div class="control-section">
+                <h2><i class="fas fa-cogs"></i> Tools</h2>
+                <div class="control-section-content grid-2-col">
+                    <button id="import-geojson-btn" class="button button-secondary">Import GeoJSON</button>
+                    <input type="file" id="import-geojson-input" accept=".geojson" style="display:none;">
+                    <button id="export-geojson-btn" class="button button-secondary">Export GeoJSON</button>
+                    <button id="clear-all-btn" class="button button-danger">Clear All</button>
                 </div>
-                <div class="flex justify-end gap-4 pt-4">
-                    <button type="button" id="cancel-submit-btn" class="button-secondary">Cancel</button>
-                    <button type="submit" class="button-primary">Broadcast Data</button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
-
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js" defer></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js" defer></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js" defer></script>
-
-    <!-- App Script -->
     <script src="app.js" defer></script>
-
 </body>
 </html>
