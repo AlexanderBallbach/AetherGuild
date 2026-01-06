@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.8.0/suncalc.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;700&display=swap');
         body { background-color: #050505; color: #e5e7eb; font-family: 'Space Grotesk', sans-serif; overflow: hidden; }
@@ -47,6 +48,8 @@
             <button class="px-5 py-2 bg-ion text-black text-xs font-bold tracking-widest uppercase hover:brightness-110 transition">Guild Portal</button>
         </div>
     </nav>
+    
+    <div id="map"></div>
 
     <!-- Sidebar: Wiki View -->
     <div id="sidebar" class="fixed top-0 right-0 h-full w-full md:w-[450px] z-[1001] clinical-panel translate-x-full transition-transform duration-500 p-10 overflow-y-auto border-l border-cyan-500/20">
@@ -55,7 +58,7 @@
         <div id="sidebar-content" class="space-y-8 mt-4">
             <header>
                 <div class="mb-4">
-                    <span class="px-2 py-0.5 border border-cyan-500 text-[9px] text-cyan-400 font-bold tracking-tighter uppercase">Verified Case</span>
+                    <span id="p-badge" class="px-2 py-0.5 border border-cyan-500 text-[9px] text-cyan-400 font-bold tracking-tighter uppercase">Verified Case</span>
                 </div>
                 <h2 id="p-name" class="text-4xl font-light tracking-tight mb-2 uppercase">Entity Name</h2>
                 <p class="text-[10px] text-gray-500 tracking-widest uppercase mb-4">Coordinate: <span id="p-coord" class="text-white">0, 0</span></p>
@@ -68,15 +71,61 @@
                 </h3>
                 <p id="p-desc" class="text-sm text-gray-300 leading-relaxed">Select a manifestation on the map to initialize the Aether Wiki interface.</p>
             </section>
-
-            <section class="grid grid-cols-2 gap-4">
-                <div class="bg-white/5 p-4 border border-white/10">
-                    <span class="text-[9px] text-gray-500 uppercase block mb-1">Status</span>
-                    <span class="text-sm font-medium text-cyan-400">Active Registry</span>
+            
+            <!-- Environmental Data -->
+            <section>
+                <h3 class="text-lg font-light text-ion uppercase tracking-tighter mb-4">Environmental Data</h3>
+                <div class="grid grid-cols-2 gap-4 text-xs">
+                    <div class="bg-white/5 p-3 border border-white/10">
+                        <span class="text-gray-500 uppercase block">Weather</span>
+                        <span id="p-weather" class="font-medium">--</span>
+                    </div>
+                    <div class="bg-white/5 p-3 border border-white/10">
+                        <span class="text-gray-500 uppercase block">Moon Phase</span>
+                        <span id="p-moon" class="font-medium">--</span>
+                    </div>
+                    <div class="bg-white/5 p-3 border border-white/10">
+                        <span class="text-gray-500 uppercase block">KP-Index</span>
+                        <span id="p-kp" class="font-medium">--</span>
+                    </div>
+                    <div class="bg-white/5 p-3 border border-white/10">
+                        <span class="text-gray-500 uppercase block">Geology</span>
+                        <span id="p-geology" class="font-medium">--</span>
+                    </div>
                 </div>
-                <div class="bg-white/5 p-4 border border-white/10">
-                    <span class="text-[9px] text-gray-500 uppercase block mb-1">Validity Score</span>
-                    <span id="p-val" class="text-sm font-medium">--</span>
+            </section>
+            
+            <!-- Sensor Readings -->
+            <section>
+                <h3 class="text-lg font-light text-ion uppercase tracking-tighter mb-4">Sensor Readings</h3>
+                <div class="grid grid-cols-3 gap-4 text-xs">
+                    <div class="bg-white/5 p-3 border border-white/10 text-center">
+                        <span class="text-gray-500 uppercase block">EMF (mG)</span>
+                        <span id="p-emf" class="text-xl font-medium">--</span>
+                    </div>
+                    <div class="bg-white/5 p-3 border border-white/10 text-center">
+                        <span class="text-gray-500 uppercase block">Temp (C)</span>
+                        <span id="p-temp" class="text-xl font-medium">--</span>
+                    </div>
+                    <div class="bg-white/5 p-3 border border-white/10 text-center">
+                        <span class="text-gray-500 uppercase block">Noise (dB)</span>
+                        <span id="p-noise" class="text-xl font-medium">--</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Validity & Peer Review -->
+            <section>
+                 <h3 class="text-lg font-light text-ion uppercase tracking-tighter mb-4">Validity</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-white/5 p-4 border border-white/10">
+                        <span class="text-[9px] text-gray-500 uppercase block mb-1">Validity Score</span>
+                        <span id="p-val" class="text-sm font-medium">--</span>
+                    </div>
+                    <div class="bg-white/5 p-4 border border-white/10">
+                        <span class="text-[9px] text-gray-500 uppercase block mb-1">Peer Review</span>
+                        <span class="text-sm font-medium text-yellow-400">Pending</span>
+                    </div>
                 </div>
             </section>
 
@@ -114,6 +163,23 @@
                     <label class="block text-[10px] text-gray-500 uppercase mb-2">Observation Details</label>
                     <textarea id="formDesc" rows="4" required placeholder="Describe triggers, sensations, and captured data..." class="w-full bg-white/5 border border-white/10 p-4 focus:border-ion outline-none text-sm leading-relaxed"></textarea>
                 </div>
+                
+                <!-- Sensor Data -->
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-[10px] text-gray-500 uppercase mb-2">EMF (mG)</label>
+                        <input type="number" id="formEmf" placeholder="0.0" class="w-full bg-white/5 border-b border-white/20 p-3 focus:border-ion outline-none transition text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-gray-500 uppercase mb-2">Temp (°C)</label>
+                        <input type="number" id="formTemp" placeholder="18.0" class="w-full bg-white/5 border-b border-white/20 p-3 focus:border-ion outline-none transition text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-gray-500 uppercase mb-2">Noise (dB)</label>
+                        <input type="number" id="formNoise" placeholder="40" class="w-full bg-white/5 border-b border-white/20 p-3 focus:border-ion outline-none transition text-sm">
+                    </div>
+                </div>
+
                 <div class="flex justify-end gap-4 pt-4">
                     <button type="button" onclick="toggleModal('submit-modal')" class="text-xs uppercase text-gray-500 hover:text-white">Cancel</button>
                     <button type="submit" class="px-8 py-3 bg-ion text-black font-bold uppercase text-[10px] tracking-widest hover:brightness-110 transition">Broadcast Data</button>
@@ -122,123 +188,7 @@
         </div>
     </div>
 
-    <div id="map"></div>
+    <script src="app.js?v=1" type="module"></script>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, Timestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        // Global variables provided by environment
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-            apiKey: "",
-            authDomain: "",
-            projectId: "",
-            storageBucket: "",
-            messagingSenderId: "",
-            appId: ""
-        };
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // Map Setup
-        const map = L.map('map', { zoomControl: false, center: [44.95, -93.34], zoom: 4 });
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
-
-        let user = null;
-
-        // AUTHENTICATION PROTOCOL (Rule 3)
-        const initAuth = async () => {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (err) {
-                console.error("Auth failed:", err);
-            }
-        };
-
-        initAuth();
-
-        onAuthStateChanged(auth, (u) => {
-            user = u;
-            if (user) {
-                startDataSubscription();
-            }
-        });
-
-        // DATA SUBSCRIPTION (Rule 1 & 2)
-        function startDataSubscription() {
-            if (!user) return;
-
-            // Public Data Collection Path (Rule 1)
-            const publicDataPath = collection(db, 'artifacts', appId, 'public', 'data', 'phenomena');
-            const q = query(publicDataPath);
-
-            onSnapshot(q, (snap) => {
-                snap.forEach((doc) => {
-                    const data = doc.data();
-                    if (!data.lat || !data.lng) return;
-
-                    const marker = L.circleMarker([data.lat, data.lng], {
-                        color: '#22d3ee', radius: 6, fillColor: '#22d3ee', fillOpacity: 0.6, weight: 1
-                    }).addTo(map);
-
-                    marker.on('click', () => {
-                        document.getElementById('p-name').innerText = data.name;
-                        document.getElementById('p-coord').innerText = `${data.lat.toFixed(3)}, ${data.lng.toFixed(3)}`;
-                        document.getElementById('p-desc').innerText = data.description;
-                        document.getElementById('p-type').innerText = data.type || "Unclassified";
-                        document.getElementById('p-val').innerText = (data.validity || Math.floor(Math.random() * 40 + 30)) + "%";
-                        document.getElementById('sidebar').classList.remove('translate-x-full');
-                    });
-                });
-            }, (error) => {
-                console.error("Firestore Listen Error:", error);
-            });
-        }
-
-        // Form Submission
-        document.getElementById('reportForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!user) {
-                console.error("Auth required to submit");
-                return;
-            }
-
-            navigator.geolocation.getCurrentPosition(async (pos) => {
-                const report = {
-                    name: document.getElementById('formName').value,
-                    type: document.getElementById('formType').value,
-                    description: document.getElementById('formDesc').value,
-                    lat: pos.coords.latitude,
-                    lng: pos.coords.longitude,
-                    timestamp: Timestamp.now(),
-                    userId: user.uid
-                };
-                
-                try {
-                    const publicDataPath = collection(db, 'artifacts', appId, 'public', 'data', 'phenomena');
-                    await addDoc(publicDataPath, report);
-                    toggleModal('submit-modal');
-                } catch (err) {
-                    console.error("Error logging data:", err);
-                }
-            }, (err) => {
-                console.error("Geolocation failed:", err);
-            });
-        });
-    </script>
-
-    <script>
-        function closeSidebar() { document.getElementById('sidebar').classList.add('translate-x-full'); }
-        function toggleModal(id) { document.getElementById(id).classList.toggle('hidden'); }
-    </script>
 </body>
 </html>
