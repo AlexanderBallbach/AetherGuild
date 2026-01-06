@@ -1,13 +1,13 @@
 { pkgs, ... }: {
   # Let Nix fetch packages from the unstable channel
-  channel = "unstable-23.11"; # or "unstable"
+  channel = "unstable";
 
   # Use https://search.nixos.org/packages to find packages
   packages = [
     pkgs.nodejs_20 # Pinned to Node.js 20
     pkgs.google-cloud-sdk
     pkgs.nodePackages.firebase-tools
-    pkgs.jdk17
+    pkgs.jdk
   ];
 
   # Sets environment variables in the workspace
