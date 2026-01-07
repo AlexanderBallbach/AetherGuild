@@ -1,271 +1,203 @@
 /*
 ==================================================
-AETHERIC INTERFACE DESIGN SYSTEM V1.1
-==================================================
-Desc: Unified stylesheet for the Aether Guild Platform,
-      combining the Atlas and Aetherpedia interfaces.
+AETHERIC INTERFACE DESIGN SYSTEM V2.4
 ==================================================
 */
 
 /* --- FONT IMPORT --- */
 @import url('https://fonts.googleapis.com/css2?family=Exo:wght@300;400;500;700&display=swap');
 
-/* --- THEME & COLOR VARIABLES --- */
+/* --- THEME VARIABLES --- */
 :root {
-    /* Base Font & Sizing */
     --font-family-base: 'Exo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     --font-size-base: 16px;
-    --border-radius-lg: 6px;
-    --border-radius-sm: 4px;
-    --transition-speed: 0.2s;
-
-    /* Default to Dark Theme */
+    
+    /* Dark Theme */
     --theme-bg-primary: hsl(225, 10%, 12%);
-    --theme-bg-secondary: hsl(225, 10%, 18%);
-    --theme-text-primary: hsl(210, 15%, 85%);
+    --theme-bg-secondary: hsla(225, 10%, 18%, 0.9); 
+    --theme-text-primary: hsl(210, 15%, 90%);
     --theme-text-secondary: hsl(210, 15%, 60%);
-    --theme-border-color: hsl(225, 10%, 25%);
-    --theme-accent-primary: hsl(180, 100%, 50%); /* Vibrant Cyan */
-    --theme-accent-glow: 0 0 8px hsla(180, 100%, 50%, 0.5);
+    --theme-border-color: hsla(225, 10%, 40%, 0.5);
+    --theme-accent-primary: hsl(180, 100%, 50%); /* Cyan */
+    --theme-accent-glow: 0 0 10px hsla(180, 100%, 50%, 0.4);
+    --theme-glass-backdrop: blur(12px);
 }
 
 body.light-theme {
     --theme-bg-primary: hsl(210, 20%, 98%);
-    --theme-bg-secondary: hsl(0, 0%, 100%);
+    --theme-bg-secondary: hsla(0, 0%, 100%, 0.9);
     --theme-text-primary: hsl(210, 10%, 25%);
     --theme-text-secondary: hsl(210, 10%, 50%);
-    --theme-border-color: hsl(210, 20%, 90%);
+    --theme-border-color: hsla(210, 20%, 80%, 0.5);
+    --theme-accent-glow: 0 0 10px hsla(180, 100%, 40%, 0.2);
 }
 
-/* --- GENERAL RESETS & BASE STYLES --- */
-body, html {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-}
+/* --- RESETS --- */
+body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: var(--font-family-base); background-color: var(--theme-bg-primary); color: var(--theme-text-primary); }
+* { box-sizing: border-box; }
+a { color: var(--theme-accent-primary); text-decoration: none; transition: all 0.2s; }
+a:hover { text-decoration: underline; text-shadow: var(--theme-accent-glow); }
 
-body {
-    font-family: var(--font-family-base);
-    font-size: var(--font-size-base);
-    background-color: var(--theme-bg-primary);
-    color: var(--theme-text-primary);
-    transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
-}
+/* --- LAYOUT --- */
+.app-container { display: flex; height: 100vh; }
+.sidebar { width: 300px; flex-shrink: 0; background-color: var(--theme-bg-secondary); backdrop-filter: var(--theme-glass-backdrop); border-right: 1px solid var(--theme-border-color); padding: 20px; display: flex; flex-direction: column; gap: 20px; z-index: 20; }
+.main-view { flex-grow: 1; display: flex; flex-direction: column; position: relative; }
 
-h1, h2, h3, h4, h5, h6 {
-    font-weight: 500;
-    color: var(--theme-text-primary);
-    letter-spacing: 0.5px;
-}
+/* --- HEADER --- */
+.main-header { padding: 16px 24px; border-bottom: 1px solid var(--theme-border-color); background-color: var(--theme-bg-secondary); backdrop-filter: var(--theme-glass-backdrop); display: flex; align-items: center; justify-content: space-between; z-index: 20; }
+.search-container { position: relative; width: 100%; max-width: 600px; }
+#search-input { width: 100%; padding: 12px 16px 12px 44px; background-color: hsla(0, 0%, 0%, 0.2); color: var(--theme-text-primary); border: 1px solid var(--theme-border-color); border-radius: 4px; font-family: var(--font-family-base); font-size: 16px; transition: all 0.2s; }
+#search-input:focus { outline: none; border-color: var(--theme-accent-primary); box-shadow: var(--theme-accent-glow); background-color: var(--theme-bg-secondary); }
+.search-icon { position: absolute; top: 50%; left: 14px; transform: translateY(-50%); color: var(--theme-text-secondary); pointer-events: none; }
 
-a {
-    color: var(--theme-accent-primary);
-    text-decoration: none;
-    transition: color var(--transition-speed) ease;
-}
-
-a:hover {
-    text-decoration: underline;
-}
-
-* {
-    box-sizing: border-box;
-}
-
-/* --- MAIN LAYOUT COMPONENTS --- */
-.app-container {
-    display: flex;
-    height: 100vh;
-}
-
-.sidebar {
+/* --- MAP UI: LAYER TREE (Bottom Left) --- */
+.map-overlay-panel {
+    position: absolute;
+    bottom: 80px; 
+    left: 20px;
     width: 280px;
-    flex-shrink: 0;
     background-color: var(--theme-bg-secondary);
-    border-right: 1px solid var(--theme-border-color);
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px; /* Space between cards */
-    transition: background-color var(--transition-speed) ease, border-color var(--transition-speed) ease;
-}
-
-.main-view {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-/* --- HEADER / SEARCH BAR --- */
-.main-header {
-    padding: 12px 24px;
-    border-bottom: 1px solid var(--theme-border-color);
-    background-color: var(--theme-bg-secondary);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.search-container {
-    position: relative;
-    width: 100%;
-    max-width: 600px;
-}
-
-#search-input {
-    width: 100%;
-    padding: 10px 16px;
-    padding-left: 40px; /* Space for icon */
-    background-color: var(--theme-bg-primary);
-    color: var(--theme-text-primary);
+    backdrop-filter: var(--theme-glass-backdrop);
     border: 1px solid var(--theme-border-color);
-    border-radius: var(--border-radius-lg);
-    font-size: 16px;
-    transition: all var(--transition-speed) ease;
-}
-
-#search-input:focus {
-    outline: none;
-    border-color: var(--theme-accent-primary);
-    box-shadow: var(--theme-accent-glow);
-}
-
-.search-icon {
-    position: absolute;
-    top: 50%;
-    left: 12px;
-    transform: translateY(-50%);
-    color: var(--theme-text-secondary);
-    pointer-events: none;
-}
-
-/* --- CONTENT AREA (MAP OR WIKI) --- */
-.content-area {
-    flex-grow: 1;
-    position: relative;
-}
-
-#map-container, #wiki-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 1;
-    transition: opacity 0.3s ease;
-}
-
-#map-container.hidden, #wiki-container.hidden {
-    opacity: 0;
-    pointer-events: none;
-}
-
-/* --- WIKI SPECIFIC STYLES --- */
-#wiki-container {
-    display: flex;
+    border-radius: 4px;
+    padding: 16px;
+    z-index: 100;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    max-height: calc(100vh - 250px);
     overflow-y: auto;
 }
 
-#wiki-content {
-    flex-grow: 1;
-    padding: 24px 32px;
+.overlay-title { margin: 0 0 16px 0; color: var(--theme-accent-primary); text-transform: uppercase; letter-spacing: 1px; font-size: 14px; border-bottom: 1px solid var(--theme-border-color); padding-bottom: 8px; }
+.layer-group { margin-bottom: 16px; }
+.layer-group-title { margin: 0 0 8px 0; color: var(--theme-text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
+.layer-option { display: flex; align-items: center; gap: 10px; padding: 4px 0; cursor: pointer; font-size: 13px; transition: color 0.2s; }
+.layer-option:hover { color: var(--theme-text-primary); }
+.layer-option input { accent-color: var(--theme-accent-primary); cursor: pointer; }
+
+/* --- MAP UI: ZOOM THROTTLE & COMPASS (Top Right) --- */
+#controls-top-right {
+    position: absolute;
+    top: 80px; 
+    right: 20px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
 }
 
-#wiki-content .firstHeading {
-    font-size: 2.5em;
-    font-weight: 700;
-    border-bottom: 1px solid var(--theme-border-color);
-    padding-bottom: 12px;
+#zoom-throttle-container {
+    background-color: var(--theme-bg-secondary);
+    backdrop-filter: var(--theme-glass-backdrop);
+    border: 1px solid var(--theme-border-color);
+    border-radius: 4px;
+    padding: 12px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    height: 180px; 
+    width: 40px;
+}
+
+#zoom-slider {
+    /* Standard vertical slider styling */
+    -webkit-appearance: none;
+    appearance: none;
+    width: 8px;
+    height: 100%;
+    background: transparent;
+    writing-mode: vertical-lr; /* Firefox */
+    direction: rtl; /* Up is positive */
+    cursor: ns-resize;
+    margin: 10px 0;
+}
+
+/* Slider Track */
+#zoom-slider::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    border: 1px solid var(--theme-border-color);
+}
+
+/* Slider Thumb */
+#zoom-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 20px;
+    width: 20px;
+    background: var(--theme-accent-primary);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--theme-accent-primary);
+    margin-left: -6px; /* Center thumb on track (since width is 8px) */
     margin-top: 0;
 }
 
-#wiki-content #siteSub {
-    color: var(--theme-text-secondary);
-    margin-top: -8px;
-    margin-bottom: 16px;
-}
-
-.wiki-main-content p {
-    line-height: 1.7;
-    font-size: 1.1em;
-}
-
-.wiki-footer {
-    margin-top: 32px;
-    padding-top: 16px;
-    border-top: 1px solid var(--theme-border-color);
-    font-size: 0.9em;
-    color: var(--theme-text-secondary);
-}
-
-
-/* --- CORE UI COMPONENTS (from Atlas) --- */
-.card {
-    background-color: var(--theme-bg-secondary);
-    border: 1px solid var(--theme-border-color);
-    border-radius: var(--border-radius-lg);
-    padding: 16px;
-}
-
-.card-header {
-    padding-bottom: 12px;
-    margin-bottom: 12px;
-    border-bottom: 1px solid var(--theme-border-color);
-}
-
-.card-title {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 700;
-}
-
-.btn {
-    display: inline-block;
-    padding: 10px 16px;
-    font-family: var(--font-family-base);
-    font-size: 14px;
-    font-weight: 500;
-    text-align: center;
-    border: 1px solid transparent;
-    border-radius: var(--border-radius-lg);
-    cursor: pointer;
-    transition: background-color var(--transition-speed) ease, transform 0.1s ease, box-shadow var(--transition-speed) ease;
-}
-
-.btn-primary {
-    background-color: var(--theme-accent-primary);
-    color: var(--theme-bg-primary);
-    font-weight: 700;
-}
-
-.form-control {
+/* Firefox Styles */
+#zoom-slider::-moz-range-track {
     width: 100%;
-    padding: 10px;
-    font-family: var(--font-family-base);
-    background-color: var(--theme-bg-primary);
-    color: var(--theme-text-primary);
-    border: 1px solid var(--theme-border-color);
-    border-radius: var(--border-radius-lg);
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
 }
 
-/* --- LEAFLET OVERRIDES --- */
-#map-container {
-    background-color: #000; /* Prevent white flash on load */
+#zoom-slider::-moz-range-thumb {
+    height: 20px;
+    width: 20px;
+    background: var(--theme-accent-primary);
+    border: none;
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--theme-accent-primary);
 }
 
-.leaflet-popup-content-wrapper, .leaflet-popup-tip {
+.maplibregl-ctrl-group {
     background-color: var(--theme-bg-secondary) !important;
-    color: var(--theme-text-primary) !important;
     border: 1px solid var(--theme-border-color) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
 }
+.maplibregl-ctrl button {
+    filter: invert(1);
+}
+
+/* --- DYNAMIC LEGEND --- */
+#dynamic-legend {
+    position: absolute;
+    bottom: 30px;
+    right: 20px;
+    background-color: var(--theme-bg-secondary);
+    backdrop-filter: var(--theme-glass-backdrop);
+    border: 1px solid var(--theme-border-color);
+    padding: 12px;
+    border-radius: 4px;
+    z-index: 90;
+    font-size: 12px;
+    min-width: 150px;
+}
+.legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.legend-color { width: 12px; height: 12px; border-radius: 50%; }
+
+/* --- MAP HUD (Bottom Left) --- */
+#map-hud { position: absolute; bottom: 20px; left: 20px; z-index: 100; display: flex; gap: 12px; align-items: center; pointer-events: none; }
+#coord-display, .map-tool-btn { pointer-events: auto; background-color: var(--theme-bg-secondary); backdrop-filter: var(--theme-glass-backdrop); border: 1px solid var(--theme-border-color); color: var(--theme-accent-primary); box-shadow: 0 4px 12px rgba(0,0,0,0.3); border-radius: 4px; }
+#coord-display { padding: 8px 12px; font-family: 'Courier New', monospace; font-weight: bold; font-size: 13px; letter-spacing: 1px; }
+.map-tool-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; color: var(--theme-text-primary); }
+.map-tool-btn:hover, .map-tool-btn.active { color: var(--theme-accent-primary); border-color: var(--theme-accent-primary); box-shadow: var(--theme-accent-glow); }
 
 /* --- UTILITIES --- */
-.text-secondary {
-    color: var(--theme-text-secondary);
-}
-.mb-1 { margin-bottom: 8px; }
-.mb-2 { margin-bottom: 16px; }
-.mt-0 { margin-top: 0; }
+.card { background-color: hsla(225, 10%, 18%, 0.6); border: 1px solid var(--theme-border-color); border-radius: 4px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.btn { display: inline-block; padding: 10px 16px; font-family: var(--font-family-base); font-size: 14px; font-weight: 600; text-align: center; border: 1px solid transparent; border-radius: 4px; cursor: pointer; transition: all 0.2s ease; text-transform: uppercase; letter-spacing: 0.5px; }
+.btn-primary { background-color: var(--theme-accent-primary); color: #000; font-weight: 700; border: 1px solid var(--theme-accent-primary); }
+.btn-secondary { background-color: transparent; color: var(--theme-text-primary); border: 1px solid var(--theme-border-color); }
+.form-control { width: 100%; padding: 10px; font-family: var(--font-family-base); background-color: hsla(0, 0%, 0%, 0.2); color: var(--theme-text-primary); border: 1px solid var(--theme-border-color); border-radius: 4px; }
+.text-secondary { color: var(--theme-text-secondary); }
+.mb-1 { margin-bottom: 8px; } .mb-2 { margin-bottom: 16px; } .mt-1 { margin-top: 8px; }
+
+/* Hide map container and wiki container based on view */
+#map-container, #wiki-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transition: opacity 0.3s ease; }
+#map-container { background-color: #0e0e0e; z-index: 1; }
+#map-container.hidden, #wiki-container.hidden { opacity: 0; pointer-events: none; z-index: -1; }
+#wiki-container { background-color: var(--theme-bg-primary); overflow-y: auto; }
+#wiki-content { padding: 40px; max-width: 900px; margin: 0 auto; }
+#search-results-container { display: none; }

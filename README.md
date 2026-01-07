@@ -1,6 +1,6 @@
 # Aether Guild | Project Bible & Vision Document
 
-**Version:** 2.0
+**Version:** 2.2 (MapLibre Migration)
 **Status:** In Development
 **Founder:** Alexander Ballbach
 **Organization:** The Aether Guild
@@ -31,62 +31,95 @@ The UI/UX is built on a crucial duality: it must be a **"sleek, vibrant, and sex
 
 The platform is a single-page application built on a unified `index.html` shell that dynamically renders two primary views: The Atlas and The Aetherpedia.
 
-### A. The Geospatial Atlas (The GIS)
+### A. The Geospatial Atlas (Mapping Specification)
 
-*   **Technology:** A high-performance, real-time map powered by Leaflet.js.
-*   **Functionality:** Visualizes "Field Reports" as markers on a global map. Popups on each marker provide a summary of the report and a direct link to the full article in the Aetherpedia, fulfilling the core "Integrated Wiki-Map UI" concept.
+The Atlas has been migrated to **MapLibre GL JS** to support vector tiles, 3D terrain, and high-performance rendering.
+
+#### 1. Core Architecture (The Basics)
+*   **Layer Control (Basemaps):** A toggle to switch between "Clinical Dark" (vector tiles), "Satellite/Topographic" (for terrain analysis), "Light Mode" (high contrast), and "Heatmap" (density visualization).
+*   **Dynamic Clustering:** When zoomed out, thousands of points group into clusters with a count (e.g., "142 Phenomena in MN"). Clicking expands the cluster.
+*   **Search & Geocoding:** A clinical search bar that allows investigators to jump to specific coordinates, cities, or named landmarks.
+*   **Coordinate Display:** A persistent readout in the header or footer showing the exact Latitude/Longitude of the cursor's current hover position.
+*   **Scale Bar:** A metric/imperial scale bar in the corner.
+*   **Dynamic Legend:** A smart legend that adapts to show only the symbols relevant to the currently enabled layers.
+
+#### 2. Advanced Layer Systems (Categorized Dropdowns)
+Layers are organized into nested dropdowns to manage visual complexity, similar to Google Earth Pro.
+
+*   **Infrastructure Layers (Interference Analysis):**
+    *   **Power Grid:** High-voltage lines and substations (to rule out EMF hallucinations).
+    *   **Telecoms:** Cell towers and radio antennas.
+    *   **Rail Network:** Active and abandoned railway lines.
+*   **Hydrological Layers (Energy Theory):**
+    *   **Waterways:** Rivers, lakes, and aquifers (tracking the "Stone Tape" theory of energy conduction via water).
+*   **Anthropological Layers:**
+    *   **Historical Land Use:** Cemeteries, battlefields, and ancient settlements.
+    *   **Borders:** Hierarchical borders for Country, State/Province, and Property (with ownership info on hover where available).
+*   **Transportation & Pathways:**
+    *   **Highways & Streets:** Standard vehicular navigation layers.
+    *   **Walkways & Cycle Paths:** Dedicated layers for pedestrian-accessible areas often frequented by investigators.
+*   **Labels & Overlays:**
+    *   **Place Labels:** Plain white text (in Dark Mode) that dynamically fades out when zooming out to reduce clutter.
+    *   **Landmarks:** Overlay for named points of interest.
+
+#### 3. Clinical Field Tools (Interaction)
+*   **Zoom Acceleration Slider:** A vertical slider with "+" and "-" buttons that offers smooth, interpolated zooming physics (momentum-based), mimicking Google Earth Pro.
+*   **Smooth Keyboard Navigation:** WASD/Arrow keys allow for fluid, diagonal panning with momentum/smoothing, eliminating "jerky" step-movements.
+*   **The Chronos Slider:** A timeline tool to "scrub" through history and visualize phenomena density changes over decades.
+*   **Spatial Filters:** Filter visible pins by manifestation type or environmental conditions (e.g., "Show only pins submitted during a New Moon").
+*   **User Geolocation:** A "Center on My Location" button using browser GPS.
+
+#### 4. The Aether Protocols (Unique Features)
+*   **Special Marker Bezels:** Markers display different bezels based on their "Validity Score" or "Recency."
+*   **Redaction Blur:** "Closed Phenomena" appear as translucent blur zones rather than pins to protect culturally sensitive locations.
+*   **Sidebar Data Injection:** Clicking a marker triggers a "Neural Handshake," populating the sidebar with witness logs and metadata.
+*   **Dodecahedron Compass:** A 3D UI element that rotates toward the nearest "Active" phenomenon.
+
+---
 
 ### B. The Clinical Submission Engine
 
-*   **Structured Data:** Investigators file structured "Field Reports" via a detailed modal form, not simple articles.
-*   **Manual Entry:** Fields for manual sensor readings are provided: **EMF (mG), Temperature (°C), and Sound (dB)**.
-*   **Automated Metadata Enrichment:** A (currently disabled) Cloud Function is designed to automatically enrich each report upon submission with objective data:
-    *   **Astronomical Data:** Moon Phase, illumination.
-    *   **Environmental Data:** Weather conditions, barometric pressure.
-    *   **Geomagnetic Data:** Solar Activity (Kp-Index).
+*   **Structured Data:** Investigators file structured "Field Reports" via a detailed modal form.
+*   **Manual Entry:** Fields for **EMF (mG), Temperature (°C), and Sound (dB)**.
+*   **Automated Metadata Enrichment:**
+    *   **Astronomical:** Moon Phase, illumination.
+    *   **Environmental:** Weather, barometric pressure.
+    *   **Geomagnetic:** Solar Activity (Kp-Index).
 
 ### C. The Aetherpedia (The Archive & Wiki)
 
-*   **Functionality:** A dynamic, multi-page knowledge base that serves as the central repository for deep-dive research.
-*   **Content Strategy:** Solves the "empty-room problem" with an on-demand import system.
-    *   **Unified Search:** The main search bar queries both the internal Aetherpedia database (Firestore `articles` collection) and the live Wikipedia API.
-    *   **On-Demand Import:** Users can choose to import a Wikipedia article. A Cloud Function fetches the article, sanitizes its HTML to match the Aetheric Interface style, and saves it to the Firestore database.
-    *   **Attribution:** Imported articles automatically display a banner linking to the original Wikipedia source, complying with the Creative Commons Attribution-ShareAlike License.
+*   **Functionality:** A dynamic, multi-page knowledge base backed by Firestore.
+*   **Wikipedia Integration:**
+    *   **Unified Search:** Queries both Aetherpedia and Wikipedia APIs.
+    *   **On-Demand Import:** Users can import Wikipedia articles, which are sanitized and stored in the Guild's database with proper attribution.
 
 ### D. Investigator Ranking & Peer Review
 
-*   **Meritocracy of Curation:** The ranking system is a meritocracy for **moderation and content curation**, not for accessing private data.
-*   **Ranks:** Users progress from Rank 0 (Witness) to Rank 4 (Guild Master) based on the quality of their contributions. Higher ranks grant the ability to review and verify submissions.
-*   **Three-Stage Review Pipeline:**
-    1.  **Community Triage:** New reports enter a public "New Reports" feed where the community can vote and comment.
-    2.  **Official Review:** High-ranking "Reviewers" use community feedback to prioritize and promote reports for official review.
-    3.  **Verification & Publication:** A verified report is published to the main Archive, integrated into the Atlas, and assigned **Validation Badges** (`Guild Certified`, `Science-Backed`, `Historical/Legal`).
+*   **Meritocracy:** Ranks (Witness to Guild Master) based on contribution quality.
+*   **Three-Stage Review:** Community Triage -> Official Review -> Verification & Badging (`Guild Certified`, `Science-Backed`).
 
-### E. "The Black Box": Trust, Ethics & Security
+### E. Trust, Ethics & Security
 
-*   **Private Pins:** A future goal is to implement zero-knowledge encrypted pins, allowing users to keep private research notes that are unreadable by anyone else, including administrators.
-*   **Closed Phenomena:** A "sensitivity" flag will be added to reports to manage access to culturally sensitive or restricted information, accessible only by high-level Guild members.
-*   **Anonymous Research:** Users will be able to consent to their anonymized data being used in large-scale statistical studies conducted by the Guild.
+*   **Private Pins:** Zero-knowledge encrypted user notes.
+*   **Closed Phenomena:** "Sensitivity" flags for restricted content.
+*   **Anonymous Research:** Protocols for data sharing in large-scale studies.
 
 ---
 
 ## 4. Technical Stack & Architecture
 
-*   **Frontend:** A vanilla JavaScript single-page application (SPA).
-    *   **Styling:** A custom, themeable CSS design system (`style.css`). No utility-first frameworks like Tailwind are used, though Tailwind's design patterns serve as inspiration.
-    *   **Mapping:** Leaflet.js.
-*   **Backend:** Google Firebase
-    *   **Database:** Cloud Firestore (for reports, articles, and user profiles).
-    *   **Authentication:** Firebase Authentication for secure user management.
-    *   **Serverless Logic:** Cloud Functions for Firebase (written in Node.js) for backend automation (e.g., creating user profiles, metadata enrichment).
-*   **CI/CD:** Automated deployments to Firebase Hosting are configured via a GitHub Actions workflow (`.github/workflows/firebase-deploy.yml`).
+*   **Frontend:** Vanilla JavaScript SPA.
+    *   **Styling:** Custom "Aetheric Interface" CSS system (Glassmorphism, Dark/Light modes).
+    *   **Mapping Engine:** **MapLibre GL JS** (Vector tiles, WebGL).
+*   **Backend:** Google Firebase (Firestore, Auth, Functions).
+*   **CI/CD:** GitHub Actions for automated Firebase Hosting deployment.
 
 ---
 
-## 5. Setup & Future Development
+## 5. Setup & Development
 
-1.  **Firebase Configuration:** The project requires a `firebase-config.js` file (gitignored) containing the Firebase project's configuration object.
-2.  **GitHub Actions Secret:** For CI/CD to function, a repository secret named `FIREBASE_SERVICE_ACCOUNT_AETHERGUILD_37084708_FA531` must be created with the JSON key from a Google Cloud service account.
-3.  **Local Development:** The Firebase Local Emulator Suite is used for local testing of Hosting, Firestore, and Auth services. Run `firebase emulators:start`.
+1.  **Firebase Configuration:** `firebase-config.js` (gitignored).
+2.  **GitHub Secrets:** `FIREBASE_SERVICE_ACCOUNT...` for CI/CD.
+3.  **Local Emulators:** `firebase emulators:start` for offline testing.
 
-This document provides a complete overview of the Aether Guild platform's vision, architecture, and implementation details.
+This document serves as the master specification for the Aether Guild platform.
