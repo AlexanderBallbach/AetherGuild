@@ -31,11 +31,12 @@
                 <div class="card-body">
                     <button id="view-switch-atlas" class="btn btn-primary" style="width:100%">Atlas</button>
                     <button id="view-switch-wiki" class="btn btn-secondary mt-1" style="width:100%">Aetherpedia</button>
+                    <button id="add-report-btn" class="btn btn-primary mt-1" style="width:100%; display:none;">Add Report</button>
                 </div>
             </div>
 
             <div id="auth-section" class="card"></div>
-            <div id="add-report-section" class="card" style="display:none;"></div>
+            <!-- Removed the dedicated add-report-section card to integrate button above -->
 
             <div class="card">
                 <div class="card-header"><h2 class="card-title">Settings</h2></div>
@@ -58,31 +59,8 @@
             <div class="content-area">
                 <div id="map-container">
                     <!-- Layer Control Tree (Custom UI) -->
-                    <div id="layer-tree-control" class="map-overlay-panel" style="display:none;">
-                        <h4 class="overlay-title">Atlas Layers</h4>
-                        
-                        <div class="layer-group">
-                            <h5 class="layer-group-title">Base Spectrum</h5>
-                            <label class="layer-option"><input type="radio" name="basemap" value="dark" checked> Clinical Dark</label>
-                            <label class="layer-option"><input type="radio" name="basemap" value="satellite"> Satellite Scan</label>
-                            <label class="layer-option"><input type="radio" name="basemap" value="light"> Light Mode</label>
-                        </div>
-
-                        <div class="layer-group">
-                            <h5 class="layer-group-title">Infrastructure</h5>
-                            <label class="layer-option"><input type="checkbox" id="layer-power"> Power Grid (EMF)</label>
-                            <label class="layer-option"><input type="checkbox" id="layer-rail"> Rail Network</label>
-                            <label class="layer-option"><input type="checkbox" id="layer-telecom"> Telecom/Radio</label>
-                        </div>
-
-                        <div class="layer-group">
-                            <h5 class="layer-group-title">Features</h5>
-                            <label class="layer-option"><input type="checkbox" id="layer-labels" checked> Place Labels</label>
-                            <label class="layer-option"><input type="checkbox" id="layer-borders" checked> Admin Borders</label>
-                            <label class="layer-option"><input type="checkbox" id="layer-roads"> Highways & Paths</label>
-                        </div>
-                    </div>
-
+                    <!-- This will be populated by JS -->
+                    
                     <!-- Map HUD Overlay -->
                     <div id="map-hud">
                         <button id="toggle-layers-btn" class="map-tool-btn" title="Layers">
@@ -95,11 +73,7 @@
                     </div>
                     
                     <!-- Zoom Slider -->
-                    <div id="zoom-control-container">
-                        <button id="zoom-in" class="zoom-btn">+</button>
-                        <input type="range" id="zoom-slider" min="0" max="20" step="0.1" value="2">
-                        <button id="zoom-out" class="zoom-btn">-</button>
-                    </div>
+                    <!-- This will be populated by JS -->
                     
                     <!-- Dynamic Legend -->
                     <div id="dynamic-legend" class="map-overlay-panel legend-panel" style="display:none;">

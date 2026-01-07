@@ -7,6 +7,16 @@ class Aetherpedia {
     constructor() {
         this.db = null; // Injected by the main AetherAtlas app
         this.wikiContentContainer = document.getElementById('wiki-content');
+        this.attachGlobalListeners();
+    }
+
+    attachGlobalListeners() {
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('import-button-page')) {
+                const title = e.target.getAttribute('data-title');
+                this.importArticle(title, e.target);
+            }
+        });
     }
 
     // --- Core Article Loading ---
@@ -97,6 +107,11 @@ class Aetherpedia {
     // --- Wikipedia Import Logic ---
 
     async importArticle(title, buttonElement) {
+        if (!firebase.auth().currentUser) {
+            alert("You must be logged in to import articles.");
+            return;
+        }
+
         if (buttonElement) {
             buttonElement.disabled = true;
             buttonElement.innerHTML = 'Importing...';

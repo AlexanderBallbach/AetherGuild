@@ -38,8 +38,8 @@ class AetherAtlas {
         // Attempt to connect to local emulators if on localhost
         if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
             try {
-                this.db.useEmulator("localhost", 8080);
-                this.auth.useEmulator("http://localhost:9099");
+                this.db.useEmulator("localhost", 8181);
+                this.auth.useEmulator("http://localhost:9199");
                 console.log("Connected to Local Emulators");
             } catch (e) { console.warn("Emulator connection skipped:", e); }
         }
@@ -72,14 +72,10 @@ class AetherAtlas {
             this.addReportsLayer(); 
             
             // Try loading data, fallback to mock if DB is not provisioned/reachable
-            if (this.user) {
-                this.loadReportsFromFirestore().catch(e => {
-                    console.warn("DB Load failed, using mock data:", e);
-                    this.loadMockReports();
-                });
-            } else {
+            this.loadReportsFromFirestore().catch(e => {
+                console.warn("DB Load failed, using mock data:", e);
                 this.loadMockReports();
-            }
+            });
         });
 
         // Event Listeners (Popups, Hover)
@@ -277,7 +273,10 @@ class AetherAtlas {
             if (this.map.getSource('reports')) this.map.getSource('reports').setData({ type: 'FeatureCollection', features: features });
         } catch (error) { 
             console.error("Error loading reports:", error); 
-            this.loadMockReports(); // Fallback
+            // Only load mock if collection is truly empty/unreachable and not just empty result
+            if(!this.map.getSource('reports')._data.features.length) {
+                this.loadMockReports(); 
+            }
         }
     }
 
@@ -293,6 +292,11 @@ class AetherAtlas {
     attachEventListeners() {
         document.getElementById('view-switch-atlas').addEventListener('click', () => this.switchView('atlas'));
         document.getElementById('view-switch-wiki').addEventListener('click', () => this.switchView('wiki'));
+        document.getElementById('add-report-btn').addEventListener('click', () => {
+             // Logic to start adding a report - toggle to select location mode
+             this.toggleLocationSelectMode();
+        });
+        
         document.getElementById('toggle-layers-btn').addEventListener('click', () => {
             const panel = document.getElementById('layer-tree-control');
             panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
@@ -310,8 +314,37 @@ class AetherAtlas {
     }
     centerOnUser() { if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(pos => { const lngLat = [pos.coords.longitude, pos.coords.latitude]; this.map.flyTo({ center: lngLat, zoom: 12 }); }); } }
     switchView(viewName) { this.currentView = viewName; document.getElementById('map-container').classList.toggle('hidden', viewName !== 'atlas'); document.getElementById('wiki-container').classList.toggle('hidden', viewName === 'atlas'); if (viewName === 'atlas' && this.map) this.map.resize(); }
-    listenForAuthStateChanges() { this.auth.onAuthStateChanged(user => { this.user = user; this.updateAuthUI(!!user); if (user && this.map) this.loadReportsFromFirestore(); }); }
-    updateAuthUI(isLoggedIn) { /* ... (Same as before) ... */ }
+    listenForAuthStateChanges() { 
+        this.auth.onAuthStateChanged(user => { 
+            this.user = user; 
+            this.updateAuthUI(!!user); 
+            // Always try to load reports regardless of auth state, rule will handle permission
+            if (this.map) this.loadReportsFromFirestore(); 
+        }); 
+    }
+    updateAuthUI(isLoggedIn) { 
+        const authSection = document.getElementById('auth-section');
+        const addReportBtn = document.getElementById('add-report-btn');
+        
+        if (isLoggedIn) {
+            authSection.innerHTML = `
+                <div class="card-header"><h2 class="card-title">Investigator</h2></div>
+                <div class="card-body">
+                    <p class="mb-1">Logged in as: <br><span class="text-secondary" style="font-size:12px">${this.user.email}</span></p>
+                    <button class="btn btn-secondary" onclick="firebase.auth().signOut()" style="width:100%">Logout</button>
+                </div>
+            `;
+            addReportBtn.style.display = 'block';
+        } else {
+            authSection.innerHTML = `
+                <div class="card-header"><h2 class="card-title">Access</h2></div>
+                <div class="card-body">
+                    <button class="btn btn-primary" onclick="window.app.authUI.show()" style="width:100%">Login / Join</button>
+                </div>
+            `;
+             addReportBtn.style.display = 'none';
+        }
+    }
     handleLiveSearch() { /* ... */ }
     renderSearchResults(aether, wiki) { /* ... */ }
     hideSearchResults() { document.getElementById('search-results-container').style.display = 'none'; }
@@ -321,8 +354,20 @@ class AetherAtlas {
         this.isSelectingLocation = !this.isSelectingLocation;
         const btn = document.getElementById('set-location-btn');
         const mapContainer = document.getElementById('map-container');
-        if (this.isSelectingLocation) { btn.textContent = 'Click Map'; mapContainer.style.cursor = 'crosshair'; document.getElementById('report-modal').classList.remove('is-visible'); }
-        else { btn.textContent = 'Set'; mapContainer.style.cursor = ''; }
+        // Update main add report button if that was the trigger
+        const addReportBtn = document.getElementById('add-report-btn');
+        
+        if (this.isSelectingLocation) { 
+            btn.textContent = 'Click Map'; 
+            if(addReportBtn) addReportBtn.textContent = 'Cancel Location';
+            mapContainer.style.cursor = 'crosshair'; 
+            document.getElementById('report-modal').classList.remove('is-visible'); 
+        }
+        else { 
+            btn.textContent = 'Set'; 
+            if(addReportBtn) addReportBtn.textContent = 'Add Report';
+            mapContainer.style.cursor = ''; 
+        }
     }
     onMapClick(e) {
         if(this.isSelectingLocation) {
@@ -332,7 +377,50 @@ class AetherAtlas {
             this.openReportModal();
         }
     }
-    async handleReportSubmit(e) { /* ... */ }
+    
+    async handleReportSubmit(e) { 
+        e.preventDefault();
+        
+        if (!this.user) {
+            alert("You must be logged in to submit a report.");
+            return;
+        }
+
+        const title = document.getElementById('report-title').value;
+        const color = document.getElementById('report-threat').value;
+        const lat = parseFloat(document.getElementById('report-lat').value);
+        const lng = parseFloat(document.getElementById('report-lng').value);
+        const details = document.getElementById('report-details').value;
+        
+        const env = {
+             emf: parseFloat(document.getElementById('env-emf').value) || 0,
+             temp: parseFloat(document.getElementById('env-temp').value) || 0,
+             sound: parseFloat(document.getElementById('env-sound').value) || 0
+        };
+
+        const reportData = {
+            title: title,
+            color: color,
+            lat: lat,
+            lng: lng,
+            details: details,
+            env: env,
+            userId: this.user.uid,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        try {
+            await this.db.collection('reports').add(reportData);
+            this.closeReportModal();
+            document.getElementById('report-form').reset();
+            // Refresh map data
+            this.loadReportsFromFirestore();
+            alert("Report submitted successfully.");
+        } catch (error) {
+            console.error("Error adding report: ", error);
+            alert("Error submitting report. See console.");
+        }
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => { window.app = new AetherAtlas(firebaseConfig); });
