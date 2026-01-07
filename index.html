@@ -58,8 +58,8 @@
 
             <div class="content-area">
                 <div id="map-container">
-                    <!-- Layer Control Tree (Custom UI) -->
-                    <!-- This will be populated by JS -->
+                    <!-- Layer Control Tree will be injected here by app.js -->
+                    <div id="layer-tree-container"></div>
                     
                     <!-- Map HUD Overlay -->
                     <div id="map-hud">
@@ -73,7 +73,7 @@
                     </div>
                     
                     <!-- Zoom Slider -->
-                    <!-- This will be populated by JS -->
+                    <div id="zoom-control-container"></div>
                     
                     <!-- Dynamic Legend -->
                     <div id="dynamic-legend" class="map-overlay-panel legend-panel" style="display:none;">
@@ -159,6 +159,7 @@
     <script src="firebase-config.js" defer></script>
     <script src="auth.js" defer></script>
     <script src="aetherpedia.js" defer></script>
+    <script src="terminator.js" defer></script>
     <script src="app.js" defer></script>
 
 </body>
