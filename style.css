@@ -1,12 +1,9 @@
 /*
 ==================================================
-AETHERIC INTERFACE DESIGN SYSTEM V1.0
+AETHERIC INTERFACE DESIGN SYSTEM V1.1
 ==================================================
-STYLE GUIDE:
-- Aesthetic: Clinical, Sophisticated, High-Tech
-- Layout: Spacing scale (4, 8, 12, 16, 24, 32)
-- Roundedness: 6px for key elements, 4px for minor ones.
-- Animations: Fast, purposeful, and subtle.
+Desc: Unified stylesheet for the Aether Guild Platform,
+      combining the Atlas and Aetherpedia interfaces.
 ==================================================
 */
 
@@ -77,7 +74,7 @@ a:hover {
     box-sizing: border-box;
 }
 
-/* --- LAYOUT COMPONENTS --- */
+/* --- MAIN LAYOUT COMPONENTS --- */
 .app-container {
     display: flex;
     height: 100vh;
@@ -85,23 +82,146 @@ a:hover {
 
 .sidebar {
     width: 280px;
+    flex-shrink: 0;
     background-color: var(--theme-bg-secondary);
     border-right: 1px solid var(--theme-border-color);
     padding: 16px;
     display: flex;
     flex-direction: column;
+    gap: 16px; /* Space between cards */
     transition: background-color var(--transition-speed) ease, border-color var(--transition-speed) ease;
 }
 
-.main-content {
+.main-view {
     flex-grow: 1;
-    overflow-y: auto;
-    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
-/* --- CORE UI COMPONENTS --- */
+/* --- HEADER / SEARCH BAR --- */
+.main-header {
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--theme-border-color);
+    background-color: var(--theme-bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
 
-/* Buttons */
+.search-container {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+}
+
+#search-input {
+    width: 100%;
+    padding: 10px 16px;
+    padding-left: 40px; /* Space for icon */
+    background-color: var(--theme-bg-primary);
+    color: var(--theme-text-primary);
+    border: 1px solid var(--theme-border-color);
+    border-radius: var(--border-radius-lg);
+    font-size: 16px;
+    transition: all var(--transition-speed) ease;
+}
+
+#search-input:focus {
+    outline: none;
+    border-color: var(--theme-accent-primary);
+    box-shadow: var(--theme-accent-glow);
+}
+
+.search-icon {
+    position: absolute;
+    top: 50%;
+    left: 12px;
+    transform: translateY(-50%);
+    color: var(--theme-text-secondary);
+    pointer-events: none;
+}
+
+/* --- CONTENT AREA (MAP OR WIKI) --- */
+.content-area {
+    flex-grow: 1;
+    position: relative;
+}
+
+#map-container, #wiki-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+#map-container.hidden, #wiki-container.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* --- WIKI SPECIFIC STYLES --- */
+#wiki-container {
+    display: flex;
+    overflow-y: auto;
+}
+
+#wiki-content {
+    flex-grow: 1;
+    padding: 24px 32px;
+}
+
+#wiki-content .firstHeading {
+    font-size: 2.5em;
+    font-weight: 700;
+    border-bottom: 1px solid var(--theme-border-color);
+    padding-bottom: 12px;
+    margin-top: 0;
+}
+
+#wiki-content #siteSub {
+    color: var(--theme-text-secondary);
+    margin-top: -8px;
+    margin-bottom: 16px;
+}
+
+.wiki-main-content p {
+    line-height: 1.7;
+    font-size: 1.1em;
+}
+
+.wiki-footer {
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 1px solid var(--theme-border-color);
+    font-size: 0.9em;
+    color: var(--theme-text-secondary);
+}
+
+
+/* --- CORE UI COMPONENTS (from Atlas) --- */
+.card {
+    background-color: var(--theme-bg-secondary);
+    border: 1px solid var(--theme-border-color);
+    border-radius: var(--border-radius-lg);
+    padding: 16px;
+}
+
+.card-header {
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--theme-border-color);
+}
+
+.card-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+}
+
 .btn {
     display: inline-block;
     padding: 10px 16px;
@@ -121,39 +241,6 @@ a:hover {
     font-weight: 700;
 }
 
-.btn-primary:hover {
-    background-color: hsl(180, 100%, 60%);
-    box-shadow: var(--theme-accent-glow);
-}
-
-.btn-secondary {
-    background-color: var(--theme-bg-secondary);
-    color: var(--theme-text-primary);
-    border: 1px solid var(--theme-border-color);
-}
-
-.btn-secondary:hover {
-    background-color: hsla(0, 0%, 100%, 0.05);
-    border-color: var(--theme-accent-primary);
-}
-
-.btn:active {
-    transform: scale(0.98);
-}
-
-/* Forms */
-.form-group {
-    margin-bottom: 16px;
-}
-
-.form-label {
-    display: block;
-    margin-bottom: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--theme-text-secondary);
-}
-
 .form-control {
     width: 100%;
     padding: 10px;
@@ -162,66 +249,23 @@ a:hover {
     color: var(--theme-text-primary);
     border: 1px solid var(--theme-border-color);
     border-radius: var(--border-radius-lg);
-    transition: border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
 }
 
-.form-control:focus {
-    outline: none;
-    border-color: var(--theme-accent-primary);
-    box-shadow: var(--theme-accent-glow);
-}
-
-/* Cards */
-.card {
-    background-color: var(--theme-bg-secondary);
-    border: 1px solid var(--theme-border-color);
-    border-radius: var(--border-radius-lg);
-    padding: 16px;
-    margin-bottom: 16px;
-}
-
-.card-header {
-    padding-bottom: 12px;
-    margin-bottom: 12px;
-    border-bottom: 1px solid var(--theme-border-color);
-}
-
-.card-title {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 700;
-}
-
-/* --- ICONS --- */
-/* Placeholder for icon styles (e.g., from an icon font or SVG set) */
-.icon {
-    display: inline-block;
-    width: 1em;
-    height: 1em;
-    stroke-width: 0;
-    stroke: currentColor;
-    fill: currentColor;
-}
-
-/* --- UTILITY CLASSES --- */
-.text-center { text-align: center; }
-.text-accent { color: var(--theme-accent-primary); }
-.mt-1 { margin-top: 8px; }
-.mt-2 { margin-top: 16px; }
-.mb-1 { margin-bottom: 8px; }
-.mb-2 { margin-bottom: 16px; }
-
-/* --- MAP SPECIFIC OVERRIDES --- */
-#map {
-    width: 100%;
-    height: 100%;
-    z-index: 1;
+/* --- LEAFLET OVERRIDES --- */
+#map-container {
+    background-color: #000; /* Prevent white flash on load */
 }
 
 .leaflet-popup-content-wrapper, .leaflet-popup-tip {
     background-color: var(--theme-bg-secondary) !important;
     color: var(--theme-text-primary) !important;
     border: 1px solid var(--theme-border-color) !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
-    border-radius: var(--border-radius-lg) !important;
 }
+
+/* --- UTILITIES --- */
+.text-secondary {
+    color: var(--theme-text-secondary);
+}
+.mb-1 { margin-bottom: 8px; }
+.mb-2 { margin-bottom: 16px; }
+.mt-0 { margin-top: 0; }
