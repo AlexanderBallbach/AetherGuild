@@ -5,6 +5,10 @@ class AetherAtlas {
         this.currentTileLayer = null;
         this.terminator = null;
         this.isAddingMarker = false;
+        this.auth = null;
+        this.db = null;
+        this.user = null;
+        this.authUI = new AuthUI();
 
         this.TILE_LAYERS = {
             dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
@@ -23,11 +27,16 @@ class AetherAtlas {
         this.initFirebase(firebaseConfig);
         this.initMap();
         this.attachEventListeners();
-        this.loadMarkersFromFirestore();
+        this.listenForAuthStateChanges();
     }
 
-    initFirebase(firebaseConfig) {
-        firebase.initializeApp(firebaseConfig);
+    // --- INITIALIZATION ---
+
+    initFirebase(config) {
+        if (!firebase.apps.length) {
+            firebase.initializeApp(config);
+        }
+        this.auth = firebase.auth();
         this.db = firebase.firestore();
     }
 
@@ -44,13 +53,65 @@ class AetherAtlas {
     attachEventListeners() {
         document.getElementById('tile-layer-select').addEventListener('change', (e) => this.setTileLayer(e.target.value));
         document.getElementById('add-marker-btn').addEventListener('click', () => this.toggleAddMarkerMode());
+        document.getElementById('theme-switcher').addEventListener('click', () => {
+            document.body.classList.toggle('light-theme');
+            feather.replace(); // Re-render icons for new theme
+        });
         this.map.on('click', (e) => this.onMapClick(e));
     }
 
-    setTileLayer(layerKey) {
-        if (this.currentTileLayer) {
-            this.map.removeLayer(this.currentTileLayer);
+    // --- AUTHENTICATION ---
+
+    listenForAuthStateChanges() {
+        this.auth.onAuthStateChanged(user => {
+            if (user) {
+                this.user = user;
+                this.updateAuthUI(true);
+                this.loadMarkersFromFirestore();
+                this.authUI.hide();
+            } else {
+                this.user = null;
+                this.updateAuthUI(false);
+                this.clearMarkers();
+            }
+        });
+    }
+
+    updateAuthUI(isLoggedIn) {
+        const authSection = document.getElementById('auth-section');
+        const addReportSection = document.getElementById('add-report-section');
+        if (isLoggedIn) {
+            authSection.innerHTML = `
+                <div class="card-body">
+                    <p class="text-secondary mb-1">Investigator:</p>
+                    <h3 class="card-title mt-0 mb-2">${this.user.email}</h3>
+                    <button id="logout-btn" class="btn btn-secondary" style="width: 100%;">Logout</button>
+                </div>
+            `;
+            addReportSection.style.display = 'block';
+            document.getElementById('logout-btn').addEventListener('click', () => this.signOut());
+        } else {
+            authSection.innerHTML = `
+                <div class="card-header"><h2 class="card-title">Welcome</h2></div>
+                <div class="card-body">
+                    <p class="text-secondary">Login to begin your investigation.</p>
+                    <button id="login-register-btn" class="btn btn-primary" style="width: 100%;">Login / Register</button>
+                </div>
+            `;
+            addReportSection.style.display = 'none';
+            document.getElementById('login-register-btn').addEventListener('click', () => this.authUI.show());
         }
+        feather.replace();
+    }
+    
+    signOut() {
+        this.auth.signOut().catch(error => console.error("Sign out error:", error));
+    }
+
+    // --- MAP & MARKERS ---
+
+    setTileLayer(layerKey) {
+        if (this.currentTileLayer) this.map.removeLayer(this.currentTileLayer);
         this.currentTileLayer = L.tileLayer(this.TILE_LAYERS[layerKey], {
             attribution: this.TILE_LAYER_ATTRIBUTIONS[layerKey],
             maxZoom: 19,
@@ -58,10 +119,13 @@ class AetherAtlas {
     }
 
     updateTerminator() {
-        if (this.terminator) {
-            this.map.removeLayer(this.terminator);
-        }
+        if (this.terminator) this.map.removeLayer(this.terminator);
         this.terminator = L.terminator().addTo(this.map);
+    }
+    
+    clearMarkers() {
+        Object.values(this.markers).forEach(({ marker }) => this.map.removeLayer(marker));
+        this.markers = {};
     }
 
     toggleAddMarkerMode() {
@@ -73,55 +137,62 @@ class AetherAtlas {
     }
 
     onMapClick(e) {
-        if (this.isAddingMarker) {
+        if (this.isAddingMarker && this.user) {
             const name = document.getElementById('marker-name').value.trim() || 'Unnamed Report';
             const color = document.getElementById('marker-color').value;
-            this.saveMarkerToFirestore(e.latlng, name, color);
-            this.toggleAddMarkerMode(); // Exit mode
+            this.saveMarkerToFirestore({ lat: e.latlng.lat, lng: e.latlng.lng }, name, color);
+            this.toggleAddMarkerMode();
         }
     }
 
     addMarkerToMap(docId, data) {
+        if (this.markers[docId]) return; // Avoid duplicates
+
         const latlng = new L.LatLng(data.lat, data.lng);
         const marker = L.marker(latlng, {
-            draggable: true,
+            draggable: this.user && this.user.uid === data.authorId,
             icon: this.createColoredIcon(data.color)
         }).addTo(this.map);
 
         marker.id = docId;
-        this.markers[docId] = { marker, name: data.name, color: data.color };
+        this.markers[docId] = { marker, ...data };
 
-        marker.on('dragend', (e) => {
-            const newLatLng = e.target.getLatLng();
-            this.db.collection('markers').doc(docId).update({ lat: newLatLng.lat, lng: newLatLng.lng });
-        });
-
-        const popupContent = `<b>${data.name}</b><br><button class="btn btn-secondary" onclick="app.deleteMarkerFromFirestore('${docId}')">Delete</button>`;
+        if (this.user && this.user.uid === data.authorId) {
+            marker.on('dragend', (e) => {
+                const newLatLng = e.target.getLatLng();
+                this.db.collection('markers').doc(docId).update({ lat: newLatLng.lat, lng: newLatLng.lng });
+            });
+        }
+        
+        const popupContent = `<b>${data.name}</b><br><small>Author: ${data.authorEmail}</small>${this.user && this.user.uid === data.authorId ? `<br><button class="btn btn-secondary" onclick="app.deleteMarkerFromFirestore('${docId}')">Delete</button>` : ''}`;
         marker.bindPopup(popupContent);
     }
 
+    // --- FIRESTORE OPERATIONS ---
+
     async loadMarkersFromFirestore() {
+        this.clearMarkers();
         try {
             const snapshot = await this.db.collection('markers').get();
-            snapshot.forEach(doc => {
-                this.addMarkerToMap(doc.id, doc.data());
-            });
+            snapshot.forEach(doc => this.addMarkerToMap(doc.id, doc.data()));
         } catch (error) {
-            console.error("Error loading markers from Firestore: ", error);
+            console.error("Error loading markers: ", error);
         }
     }
 
     async saveMarkerToFirestore(latlng, name, color) {
+        if (!this.user) return;
         try {
             const docRef = await this.db.collection('markers').add({
-                lat: latlng.lat,
-                lng: latlng.lng,
-                name: name,
-                color: color
+                ...latlng,
+                name,
+                color,
+                authorId: this.user.uid,
+                authorEmail: this.user.email
             });
-            this.addMarkerToMap(docRef.id, { lat: latlng.lat, lng: latlng.lng, name, color });
+            this.addMarkerToMap(docRef.id, { ...latlng, name, color, authorId: this.user.uid, authorEmail: this.user.email });
         } catch (error) {
-            console.error("Error saving marker to Firestore: ", error);
+            console.error("Error saving marker: ", error);
         }
     }
 
@@ -132,10 +203,11 @@ class AetherAtlas {
             this.map.removeLayer(this.markers[docId].marker);
             delete this.markers[docId];
         } catch (error) {
-            console.error("Error deleting marker from Firestore: ", error);
+            console.error("Error deleting marker: ", error);
         }
     }
 
+    // --- HELPERS ---
     createColoredIcon(color) {
         return L.divIcon({
             className: 'custom-div-icon',
@@ -148,15 +220,6 @@ class AetherAtlas {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyAEven_LdLIDeHaCI3ayto4XVDt2hBMOx4",
-      authDomain: "aetherguild-37084708-fa531.firebaseapp.com",
-      projectId: "aetherguild-37084708-fa531",
-      storageBucket: "aetherguild-37084708-fa531.firebasestorage.app",
-      messagingSenderId: "1020806444380",
-      appId: "1:1020806444380:web:ea9a30f7705a294fc1fd99"
-    };
-    
+    // This assumes firebase-config.js has already been loaded
     window.app = new AetherAtlas(firebaseConfig);
 });

@@ -4,7 +4,7 @@
 
   # Use https://search.nixos.org/packages to find packages
   packages = [
-    pkgs.nodejs_20 # Pinned to Node.js 20
+    ypkgs.nodejs_20 # Pinned to Node.js 20
     pkgs.google-cloud-sdk
     pkgs.nodePackages.firebase-tools
     pkgs.jdk
