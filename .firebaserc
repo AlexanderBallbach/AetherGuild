@@ -1,5 +1,7 @@
 {
   "projects": {
     "default": "aetherguild-37084708-fa531"
-  }
+  },
+  "targets": {},
+  "etags": {}
 }
