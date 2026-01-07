@@ -1,242 +1,227 @@
-/* --- General Styles & Resets --- */
+/*
+==================================================
+AETHERIC INTERFACE DESIGN SYSTEM V1.0
+==================================================
+STYLE GUIDE:
+- Aesthetic: Clinical, Sophisticated, High-Tech
+- Layout: Spacing scale (4, 8, 12, 16, 24, 32)
+- Roundedness: 6px for key elements, 4px for minor ones.
+- Animations: Fast, purposeful, and subtle.
+==================================================
+*/
+
+/* --- FONT IMPORT --- */
+@import url('https://fonts.googleapis.com/css2?family=Exo:wght@300;400;500;700&display=swap');
+
+/* --- THEME & COLOR VARIABLES --- */
+:root {
+    /* Base Font & Sizing */
+    --font-family-base: 'Exo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-size-base: 16px;
+    --border-radius-lg: 6px;
+    --border-radius-sm: 4px;
+    --transition-speed: 0.2s;
+
+    /* Default to Dark Theme */
+    --theme-bg-primary: hsl(225, 10%, 12%);
+    --theme-bg-secondary: hsl(225, 10%, 18%);
+    --theme-text-primary: hsl(210, 15%, 85%);
+    --theme-text-secondary: hsl(210, 15%, 60%);
+    --theme-border-color: hsl(225, 10%, 25%);
+    --theme-accent-primary: hsl(180, 100%, 50%); /* Vibrant Cyan */
+    --theme-accent-glow: 0 0 8px hsla(180, 100%, 50%, 0.5);
+}
+
+body.light-theme {
+    --theme-bg-primary: hsl(210, 20%, 98%);
+    --theme-bg-secondary: hsl(0, 0%, 100%);
+    --theme-text-primary: hsl(210, 10%, 25%);
+    --theme-text-secondary: hsl(210, 10%, 50%);
+    --theme-border-color: hsl(210, 20%, 90%);
+}
+
+/* --- GENERAL RESETS & BASE STYLES --- */
 body, html {
     margin: 0;
     padding: 0;
     width: 100%;
     height: 100%;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     overflow: hidden;
-    background-color: #1e1e1e;
-    color: #fff;
 }
 
-/* --- Map Container --- */
-#map {
-    width: 100%;
-    height: 100%;
+body {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
+    background-color: var(--theme-bg-primary);
+    color: var(--theme-text-primary);
+    transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
 }
 
-/* --- UI Controls --- */
-.controls-container {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 1000; 
-    background: rgba(25, 25, 25, 0.85);
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    width: 300px;
-    max-height: calc(100vh - 40px);
-    display: flex;
-    flex-direction: column;
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 500;
+    color: var(--theme-text-primary);
+    letter-spacing: 0.5px;
 }
 
-#controls-content {
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: #555 #333;
+a {
+    color: var(--theme-accent-primary);
+    text-decoration: none;
+    transition: color var(--transition-speed) ease;
 }
 
-#controls-content::-webkit-scrollbar {
-    width: 8px;
+a:hover {
+    text-decoration: underline;
 }
 
-#controls-content::-webkit-scrollbar-track {
-    background: #333;
-}
-
-#controls-content::-webkit-scrollbar-thumb {
-    background-color: #555;
-    border-radius: 4px;
-    border: 2px solid #333;
-}
-
-#toggle-controls-btn {
-    position: absolute;
-    top: 0;
-    right: -30px;
-    width: 30px;
-    height: 30px;
-    background-color: rgba(25, 25, 25, 0.85);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-left: none;
-    border-radius: 0 4px 4px 0;
-    cursor: pointer;
-    font-size: 14px;
-    line-height: 30px;
-    text-align: center;
-}
-
-/* --- UI Sections --- */
-.control-section {
-    margin-bottom: 20px;
-}
-
-.control-section h2 {
-    font-size: 16px;
-    margin-top: 0;
-    margin-bottom: 12px;
-    color: #00aaff;
-    border-bottom: 1px solid #444;
-    padding-bottom: 8px;
-    display: flex;
-    align-items: center;
-}
-
-.control-section h2 i {
-    margin-right: 8px;
-}
-
-.control-section-content {
-    display: grid;
-    gap: 12px;
-}
-
-/* --- Form Elements & Buttons --- */
-label {
-    display: block;
-    margin-bottom: 5px;
-    font-size: 14px;
-    color: #ccc;
-}
-
-select, input[type="text"], input[type="color"] {
-    width: 100%;
-    padding: 8px;
-    border-radius: 4px;
-    border: 1px solid #555;
-    background-color: #2c2c2c;
-    color: #fff;
+* {
     box-sizing: border-box;
 }
 
-input[type="color"] {
-    padding: 4px;
-    height: 38px;
+/* --- LAYOUT COMPONENTS --- */
+.app-container {
+    display: flex;
+    height: 100vh;
 }
 
-.button, button {
+.sidebar {
+    width: 280px;
+    background-color: var(--theme-bg-secondary);
+    border-right: 1px solid var(--theme-border-color);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    transition: background-color var(--transition-speed) ease, border-color var(--transition-speed) ease;
+}
+
+.main-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 24px;
+}
+
+/* --- CORE UI COMPONENTS --- */
+
+/* Buttons */
+.btn {
     display: inline-block;
-    width: 100%;
-    padding: 10px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    text-align: center;
-    cursor: pointer;
+    padding: 10px 16px;
+    font-family: var(--font-family-base);
     font-size: 14px;
-    transition: background-color 0.2s, transform 0.1s;
-    box-sizing: border-box; 
+    font-weight: 500;
+    text-align: center;
+    border: 1px solid transparent;
+    border-radius: var(--border-radius-lg);
+    cursor: pointer;
+    transition: background-color var(--transition-speed) ease, transform 0.1s ease, box-shadow var(--transition-speed) ease;
 }
 
-.button:hover, button:hover {
-    background-color: #0056b3;
+.btn-primary {
+    background-color: var(--theme-accent-primary);
+    color: var(--theme-bg-primary);
+    font-weight: 700;
 }
 
-.button:active, button:active {
+.btn-primary:hover {
+    background-color: hsl(180, 100%, 60%);
+    box-shadow: var(--theme-accent-glow);
+}
+
+.btn-secondary {
+    background-color: var(--theme-bg-secondary);
+    color: var(--theme-text-primary);
+    border: 1px solid var(--theme-border-color);
+}
+
+.btn-secondary:hover {
+    background-color: hsla(0, 0%, 100%, 0.05);
+    border-color: var(--theme-accent-primary);
+}
+
+.btn:active {
     transform: scale(0.98);
 }
 
-.button-secondary {
-    background-color: #495057;
+/* Forms */
+.form-group {
+    margin-bottom: 16px;
 }
 
-.button-secondary:hover {
-    background-color: #343a40;
-}
-
-.button-danger {
-    background-color: #dc3545;
-}
-
-.button-danger:hover {
-    background-color: #c82333;
-}
-
-.grid-2-col {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-}
-
-/* --- Marker List --- */
-#marker-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    max-height: 200px; /* Adjust as needed */
-    overflow-y: auto;
-}
-
-.marker-list-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px;
-    background-color: #2c2c2c;
-    border-radius: 4px;
+.form-label {
+    display: block;
     margin-bottom: 8px;
-    border-left: 4px solid var(--marker-color, #007bff);
-}
-
-.marker-item-info {
-    flex-grow: 1;
-    cursor: pointer;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    margin-right: 10px;
-}
-
-.marker-item-name {
-    font-weight: bold;
-    color: #f0f0f0;
-}
-
-.marker-item-actions button {
-    background: none;
-    border: none;
-    color: #aaa;
-    cursor: pointer;
     font-size: 14px;
-    padding: 3px;
+    font-weight: 500;
+    color: var(--theme-text-secondary);
 }
 
-.marker-item-actions button:hover {
-    color: #fff;
+.form-control {
+    width: 100%;
+    padding: 10px;
+    font-family: var(--font-family-base);
+    background-color: var(--theme-bg-primary);
+    color: var(--theme-text-primary);
+    border: 1px solid var(--theme-border-color);
+    border-radius: var(--border-radius-lg);
+    transition: border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
 }
 
-/* --- Custom Marker Icon --- */
-.custom-div-icon svg path {
-    stroke: white;
-    stroke-width: 1;
-    stroke-opacity: 0.5;
+.form-control:focus {
+    outline: none;
+    border-color: var(--theme-accent-primary);
+    box-shadow: var(--theme-accent-glow);
 }
 
-/* --- Popup Styles --- */
-.leaflet-popup-content-wrapper {
-    background-color: rgba(40, 40, 40, 0.95) !important;
-    color: #fff !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.5) !important;
-    border-radius: 6px !important;
+/* Cards */
+.card {
+    background-color: var(--theme-bg-secondary);
+    border: 1px solid var(--theme-border-color);
+    border-radius: var(--border-radius-lg);
+    padding: 16px;
+    margin-bottom: 16px;
 }
 
-.leaflet-popup-content {
-    font-size: 14px;
+.card-header {
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--theme-border-color);
 }
 
-.leaflet-popup-tip {
-    background: rgba(40, 40, 40, 0.95) !important;
+.card-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
 }
 
-.popup-actions button {
-    width: auto;
-    padding: 5px 10px;
-    margin-top: 10px;
-    margin-right: 5px;
+/* --- ICONS --- */
+/* Placeholder for icon styles (e.g., from an icon font or SVG set) */
+.icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    stroke-width: 0;
+    stroke: currentColor;
+    fill: currentColor;
+}
+
+/* --- UTILITY CLASSES --- */
+.text-center { text-align: center; }
+.text-accent { color: var(--theme-accent-primary); }
+.mt-1 { margin-top: 8px; }
+.mt-2 { margin-top: 16px; }
+.mb-1 { margin-bottom: 8px; }
+.mb-2 { margin-bottom: 16px; }
+
+/* --- MAP SPECIFIC OVERRIDES --- */
+#map {
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.leaflet-popup-content-wrapper, .leaflet-popup-tip {
+    background-color: var(--theme-bg-secondary) !important;
+    color: var(--theme-text-primary) !important;
+    border: 1px solid var(--theme-border-color) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+    border-radius: var(--border-radius-lg) !important;
 }
