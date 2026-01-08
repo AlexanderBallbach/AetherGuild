@@ -20,62 +20,190 @@
 </head>
 
 <body class="dark-theme">
-
-
-
     <div class="app-container">
-        <!-- Unified Sidebar -->
-        <aside class="sidebar">
-            <div style="text-align: center; padding-bottom: 16px; border-bottom: 1px solid var(--theme-border-color);">
-                <h1 class="card-title" style="font-size: 24px;">Aether Guild</h1>
-                <p class="text-secondary" style="font-size: 14px;">Global Atlas & Archive</p>
-            </div>
+        <!-- Map Container (Background Layer) -->
+        <div id="map-container"></div>
 
-            <div class="card">
-                <div class="card-header">
-                    <div class="card" style="padding: 12px; margin-bottom: 16px; background: rgba(0,0,0,0.1);">
-                        <h4 class="mt-0 mb-1"
-                            style="font-size: 14px; text-transform: uppercase; color: var(--theme-text-secondary);">
-                            Environmental Readings</h4>
-                        <div class="grid-2-col" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
-                            <div class="form-group" style="margin-bottom:0;">
-                                <label for="env-emf" class="form-label">EMF (mG)</label>
-                                <input type="number" step="0.1" id="env-emf" class="form-control" placeholder="0.0">
-                            </div>
-                            <div class="form-group" style="margin-bottom:0;">
-                                <label for="env-temp" class="form-label">Temp (°C)</label>
-                                <input type="number" step="0.1" id="env-temp" class="form-control" placeholder="20.0">
-                            </div>
-                            <div class="form-group" style="margin-bottom:0;">
-                                <label for="env-sound" class="form-label">Sound (dB)</label>
-                                <input type="number" id="env-sound" class="form-control" placeholder="0">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="report-details" class="form-label">Observations & Details</label>
-                        <textarea id="report-details" class="form-control" rows="4"
-                            placeholder="Describe the phenomena..." required></textarea>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Report</button>
-                    </form>
+        <!-- Top Navigation Bar (Floating) -->
+        <header class="top-nav-bar">
+            <!-- Left: Branding & Views -->
+            <div class="nav-left">
+                <div class="branding">
+                    <i data-feather="hexagon"></i>
+                    <span>AETHER GUILD</span>
+                </div>
+                <!-- View Toggles -->
+                <div class="view-toggles">
+                    <button id="view-switch-atlas" class="nav-tab active">ATLAS</button>
+                    <button id="view-switch-wiki" class="nav-tab">AETHERPEDIA</button>
+                </div>
+                <!-- Wiki Search (Left) -->
+                <div class="search-wrapper">
+                    <i data-feather="search"></i>
+                    <input type="text" id="wiki-search-input" placeholder="Search Archives...">
                 </div>
             </div>
 
-            <!-- Firebase SDKs -->
-            <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-            <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-            <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+            <!-- Center: Location Search -->
+            <div class="nav-center">
+                <div class="search-wrapper location-search">
+                    <i data-feather="map-pin"></i>
+                    <input type="text" id="location-search-input" placeholder="Find Location (City, Keep, Anomaly)...">
+                    <ul id="location-suggestions" class="suggestions-dropdown hidden"></ul>
+                </div>
+            </div>
 
-            <!-- App Logic -->
-            <script src="firebase-config.js" defer></script>
-            <script src="auth.js" defer></script>
-            <script src="aetherpedia.js" defer></script>
-            <script src="terminator.js" defer></script>
-            <script src="app.js" defer></script>
+            <!-- Right: Actions & Profile -->
+            <div class="nav-right">
+                <button id="add-report-btn" class="btn btn-primary btn-sm">
+                    <i data-feather="plus-circle"></i> REPORT
+                </button>
 
+                <div class="user-menu-container" style="position: relative;">
+                    <button id="user-menu-btn" class="user-avatar-btn">
+                        <span id="user-avatar-display">?</span>
+                    </button>
+                    <!-- User Dropdown -->
+                    <div id="user-dropdown" class="dropdown-menu hidden">
+                        <div id="auth-section">
+                            <!-- Injected via auth.js/app.js -->
+                        </div>
+                    </div>
+                </div>
+
+                <button id="settings-btn" class="btn btn-icon">
+                    <i data-feather="settings"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Dynamic Overlay: Wiki (Hidden by default) -->
+        <div id="wiki-container" class="glass-overlay hidden">
+            <div class="wiki-header">
+                <h2>Aetherpedia Archives</h2>
+                <button id="close-wiki" class="btn btn-icon"><i data-feather="x"></i></button>
+            </div>
+            <div id="wiki-content">
+                <!-- Wiki Articles Load Here -->
+            </div>
+        </div>
+
+        <!-- Bottom HUD (Floating) -->
+        <footer class="bottom-hud">
+            <!-- Left: Layers -->
+            <div class="hud-group">
+                <button id="toggle-layers-btn" class="hud-btn" title="Map Layers">
+                    <i data-feather="layers"></i>
+                </button>
+                <!-- Layer Tree Popover -->
+                <div id="layer-tree-container" class="hidden">
+                    <!-- Injected via app.js -->
+                </div>
+            </div>
+
+            <!-- Center: Coordinates -->
+            <div class="hud-center">
+                <div id="coord-display">LAT: 0.0000 LON: 0.0000</div>
+            </div>
+
+            <!-- Right: Locate & Zoom -->
+            <div class="hud-group">
+                <!-- Legend (Dynamic) -->
+                <div id="dynamic-legend" class="map-overlay-panel" style="display:none; bottom: 60px; right: 60px;">
+                    <h4 class="overlay-title">Legend</h4>
+                    <div id="legend-content"></div>
+                </div>
+
+                <button id="locate-btn" class="hud-btn" title="Locate Me">
+                    <i data-feather="crosshair"></i>
+                </button>
+
+                <div id="zoom-control-container" class="hud-group" style="margin-left: 8px;">
+                    <!-- Injected or Static -->
+                </div>
+            </div>
+        </footer>
+
+        <!-- Report Modal (Glassmorphic) -->
+        <div id="report-modal" class="modal-backdrop hidden">
+            <div class="modal-content glass-panel">
+                <div class="modal-header">
+                    <h3>Submit Anomaly Report</h3>
+                    <button id="report-modal-close" class="btn btn-icon"><i data-feather="x"></i></button>
+                </div>
+                <div class="modal-body">
+                    <form id="report-form">
+                        <div class="form-grid">
+                            <div class="form-group full">
+                                <label for="report-title">Anomaly Title</label>
+                                <input type="text" id="report-title" required placeholder="e.g. Spectral Residue">
+                            </div>
+
+                            <div class="form-group half">
+                                <label for="report-threat">Threat Level</label>
+                                <select id="report-threat">
+                                    <option value="#00aaff">Low (Blue)</option>
+                                    <option value="#ffaa00">Medium (Orange)</option>
+                                    <option value="#ff0000">Critical (Red)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group half">
+                                <label>Location</label>
+                                <div style="display:flex; gap:8px;">
+                                    <input type="text" id="report-lat" placeholder="Lat" readonly style="width:50%">
+                                    <input type="text" id="report-lng" placeholder="Lng" readonly style="width:50%">
+                                    <button type="button" id="set-location-btn" class="btn btn-secondary btn-icon"><i
+                                            data-feather="map-pin"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="form-group third">
+                                <label>EMF (mG)</label>
+                                <input type="number" id="env-emf" step="0.1">
+                            </div>
+                            <div class="form-group third">
+                                <label>Temp (°C)</label>
+                                <input type="number" id="env-temp" step="0.1">
+                            </div>
+                            <div class="form-group third">
+                                <label>Sound (dB)</label>
+                                <input type="number" id="env-sound">
+                            </div>
+
+                            <div class="form-group full">
+                                <label>Description</label>
+                                <textarea id="report-details" rows="3" placeholder="Observation notes..."></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary full" style="margin-top:8px;">Transmit
+                                Report</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
+    <!-- App Logic -->
+    <script src="firebase-config.js" defer></script>
+    <script src="auth.js" defer></script>
+    <script src="aetherpedia.js" defer></script>
+    <script src="terminator.js" defer></script>
+    <script src="app.js" defer></script>
+
+    <script>
+        // Init Feather Icons
+        document.addEventListener('DOMContentLoaded', () => {
+            feather.replace();
+        });
+    </script>
 </body>
 
 </html>

@@ -381,6 +381,44 @@ class AetherAtlas {
 
     // I will REPLACE from initUIControls (151) to end of class (747).
 
+    attachMapEventListeners() {
+        this.map.on('click', (e) => this.onMapClick(e));
+        this.map.on('mousemove', (e) => {
+            const disp = document.getElementById('coord-display');
+            if (disp) disp.innerText = `LAT: ${e.lngLat.lat.toFixed(4)} LON: ${e.lngLat.lng.toFixed(4)}`;
+        });
+        this.map.on('mouseenter', 'unclustered-point', () => this.map.getCanvas().style.cursor = 'pointer');
+        this.map.on('mouseleave', 'unclustered-point', () => this.map.getCanvas().style.cursor = '');
+
+        this.map.on('click', 'clusters', (e) => {
+            const features = this.map.queryRenderedFeatures(e.point, { layers: ['clusters'] });
+            const clusterId = features[0].properties.cluster_id;
+            this.map.getSource('reports').getClusterExpansionZoom(clusterId, (err, zoom) => {
+                if (err) return;
+                this.map.easeTo({ center: features[0].geometry.coordinates, zoom: zoom });
+            });
+        });
+
+        this.map.on('click', 'unclustered-point', (e) => {
+            const props = e.features[0].properties;
+            const coordinates = e.features[0].geometry.coordinates.slice();
+            const popupContent = `
+                <div style="min-width:200px">
+                    <h4 style="color: ${props.color || '#fff'}; margin: 0 0 8px;">${props.title}</h4>
+                    <p style="font-size: 13px; margin-bottom:8px;">${props.details}</p>
+                    <button class="btn btn-secondary btn-sm w-100" onclick="window.app.switchView('wiki'); window.app.wiki.loadArticle('${props.title.replace(/ /g, '_')}');">
+                        View Article
+                    </button>
+                    ${props.timestamp ? `<div style="font-size:10px; color:#aaa; margin-top:4px;">${new Date(props.timestamp.seconds * 1000).toLocaleDateString()}</div>` : ''}
+                </div>`;
+
+            new maplibregl.Popup({ className: 'custom-popup', maxWidth: '300px' })
+                .setLngLat(coordinates)
+                .setHTML(popupContent)
+                .addTo(this.map);
+        });
+    }
+
     async handleReportSubmit(e) {
         e.preventDefault();
         if (!this.user) { alert("You must be logged in."); return; }
