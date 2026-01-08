@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Verification</title>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <!-- Config -->
+    <script src="firebase-config.js"></script>
+</head>
+<body>
+    <h1>Firebase Verification</h1>
+    <div id="status">Initializing...</div>
+    <div id="details"></div>
+
+    <script>
+        function log(message, color = 'black') {
+            const details = document.getElementById('details');
+            const p = document.createElement('p');
+            p.style.color = color;
+            p.textContent = message;
+            details.appendChild(p);
+            console.log(message);
+        }
+
+        try {
+            if (typeof firebaseConfig === 'undefined') {
+                throw new Error("firebaseConfig is not defined. Check firebase-config.js");
+            }
+
+            firebase.initializeApp(firebaseConfig);
+            const app = firebase.app();
+            log(`App Initialized: ${app.name}`, 'green');
+            log(`Project ID: ${app.options.projectId}`, 'blue');
+
+            if (app.options.projectId === 'aetherguild-37084708-fa531') {
+                log("Project ID Matches!", 'green');
+                document.getElementById('status').textContent = "SUCCESS: Configuration Valid";
+                document.getElementById('status').style.color = "green";
+            } else {
+                throw new Error(`Project ID Mismatch. Expected 'aetherguild-37084708-fa531', got '${app.options.projectId}'`);
+            }
+
+        } catch (error) {
+            document.getElementById('status').textContent = "FAILURE";
+            document.getElementById('status').style.color = "red";
+            log(error.message, 'red');
+            console.error(error);
+        }
+    </script>
+</body>
+</html>
