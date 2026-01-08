@@ -306,22 +306,75 @@ a:hover {
     pointer-events: auto;
 }
 
-/* Layer Tree Popover (Bottom Left Upwards) */
 #layer-tree-container {
     position: absolute;
-    bottom: 60px;
-    left: 0;
-    width: 250px;
+    bottom: 80px;
+    /* Moved up slightly */
+    left: 24px;
+    width: 500px;
+    /* Wider for 2 columns */
     /* Toggled by JS via .hidden class */
-    /* Reuse map-overlay-panel styling essentially */
     background: var(--theme-bg-secondary);
     border: 1px solid var(--theme-border-color);
-    border-radius: 8px;
-    padding: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(16px);
-    max-height: 400px;
+    max-height: 500px;
     overflow-y: auto;
+
+    /* Grid Layout */
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+#layer-tree-control {
+    display: contents;
+    /* Allow children to participate in grid */
+}
+
+/* Header spans both columns */
+#layer-tree-control>.overlay-title {
+    grid-column: 1 / -1;
+    margin-top: 0;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--theme-border-color);
+    padding-bottom: 8px;
+    font-size: 16px;
+    letter-spacing: 1px;
+    color: var(--theme-accent-primary);
+}
+
+.layer-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.layer-group-title {
+    margin: 0 0 8px 0;
+    font-size: 13px;
+    text-transform: uppercase;
+    color: var(--theme-text-secondary);
+    font-weight: 700;
+}
+
+.layer-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    color: var(--theme-text-primary);
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.layer-option:hover {
+    background: rgba(255, 255, 255, 0.05);
 }
 
 /* Dynamic Legend Reposition */

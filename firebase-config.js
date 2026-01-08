@@ -1,6 +1,6 @@
 // IMPORTANT: PASTE YOUR FIREBASE CONFIGURATION OBJECT HERE
 
-const firebaseConfig = {
+window.firebaseConfig = {
   apiKey: "AIzaSyAEven_LdLIDeHaCI3ayto4XVDt2hBMOx4",
   authDomain: "aetherguild-37084708-fa531.firebaseapp.com",
   projectId: "aetherguild-37084708-fa531",

@@ -65,15 +65,14 @@ Layers are organized into nested dropdowns to manage visual complexity, similar 
 #### 3. Clinical Field Tools (Interaction)
 *   **Zoom Acceleration Slider:** A vertical slider with "+" and "-" buttons that offers smooth, interpolated zooming physics (momentum-based), mimicking Google Earth Pro.
 *   **Smooth Keyboard Navigation:** WASD/Arrow keys allow for fluid, diagonal panning with momentum/smoothing, eliminating "jerky" step-movements.
-*   **The Chronos Slider:** A timeline tool to "scrub" through history and visualize phenomena density changes over decades.
+*   **The Chronos Slider (Coming Soon):** A planned timeline tool to "scrub" through history and visualize phenomena density changes over decades.
 *   **Spatial Filters:** Filter visible pins by manifestation type or environmental conditions (e.g., "Show only pins submitted during a New Moon").
 *   **User Geolocation:** A "Center on My Location" button using browser GPS.
 
 #### 4. The Aether Protocols (Unique Features)
 *   **Special Marker Bezels:** Markers display different bezels based on their "Validity Score" or "Recency."
 *   **Redaction Blur:** "Closed Phenomena" appear as translucent blur zones rather than pins to protect culturally sensitive locations.
-*   **Sidebar Data Injection:** Clicking a marker triggers a "Neural Handshake," populating the sidebar with witness logs and metadata.
-*   **Dodecahedron Compass:** A 3D UI element that rotates toward the nearest "Active" phenomenon.
+*   **Interactive Data Popups:** Clicking a marker opens a detailed glassmorphic popup containing witness logs, metadata, and links to the Aetherpedia.
 
 ---
 

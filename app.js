@@ -12,7 +12,16 @@ class AetherAtlas {
         this.currentView = 'atlas';
         this.activeOverlays = new Set();
         this.isStyleLoaded = false;
+        this.isSelectingLocation = false; // Initialize explicitly
         this.allReports = []; // Store all reports for filtering
+
+        // Ensure config is available
+        const config = firebaseConfig || window.firebaseConfig;
+        if (!config) {
+            console.error("Firebase config not found!");
+            alert("Configuration Error: Firebase config missing.");
+            return;
+        }
 
         this.keys = { ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false, w: false, a: false, s: false, d: false };
         this.panVelocity = { x: 0, y: 0 };
@@ -50,11 +59,14 @@ class AetherAtlas {
             }
         };
 
-        this.initFirebase(firebaseConfig);
+        this.initFirebase(config);
         this.attachEventListeners();
         this.listenForAuthStateChanges();
 
-        // Initialize immediately
+        // Initialize UI immediately (don't wait for map)
+        this.initUIControls();
+
+        // Initialize Map
         this.initMapView();
     }
 
@@ -82,7 +94,7 @@ class AetherAtlas {
         this.map.on('load', () => {
             this.isStyleLoaded = true;
             this.reapplyAllOverlays();
-            this.initUIControls();
+            this.initMapControls();
             this.initKeyboardControls();
 
             // Force resize to ensure flex layout is respected
@@ -126,6 +138,15 @@ class AetherAtlas {
         this.initLayerControlUI();
         this.initZoomControl();
 
+        this.initLocationSearch();
+
+        // Initialize icons for injected content
+        setTimeout(() => feather.replace(), 0);
+    }
+
+    initMapControls() {
+        if (!this.map) return;
+
         this.map.addControl(new maplibregl.NavigationControl({
             visualizePitch: true,
             showCompass: true,
@@ -134,11 +155,6 @@ class AetherAtlas {
 
         const scale = new maplibregl.ScaleControl({ maxWidth: 80, unit: 'imperial' });
         this.map.addControl(scale, 'bottom-right');
-
-        this.initLocationSearch();
-
-        // Initialize icons for injected content
-        setTimeout(() => feather.replace(), 0);
     }
 
     initLocationSearch() {
@@ -353,8 +369,10 @@ class AetherAtlas {
 
     initLayerControlUI() {
         const container = document.getElementById('layer-tree-container');
-        let html = '<div id="layer-tree-control" class="map-overlay-panel" style="display:block;"><h4 class="overlay-title">Atlas Layers</h4>';
+        // We use display: contents on the wrapper to let groups sit in the grid
+        let html = '<div id="layer-tree-control"><h4 class="overlay-title">Atlas Layers</h4>';
 
+        // Column 1: Basemaps & First Overlay Group
         html += `<div class="layer-group"><h5 class="layer-group-title">${this.layerConfig.basemaps.groupName}</h5>`;
         Object.entries(this.layerConfig.basemaps.layers).forEach(([name, url], index) => {
             const checked = index === 0 ? 'checked' : '';
@@ -362,6 +380,7 @@ class AetherAtlas {
         });
         html += `</div>`;
 
+        // Overlays
         Object.entries(this.layerConfig.overlays).forEach(([groupName, layers]) => {
             html += `<div class="layer-group"><h5 class="layer-group-title">${groupName}</h5>`;
             layers.forEach(layer => {
@@ -398,7 +417,7 @@ class AetherAtlas {
         document.getElementById('add-report-btn').addEventListener('click', () => this.toggleLocationSelectMode());
         document.getElementById('toggle-layers-btn').addEventListener('click', () => {
             const tree = document.getElementById('layer-tree-container');
-            tree.style.display = tree.style.display === 'none' || tree.style.display === '' ? 'block' : 'none';
+            tree.classList.toggle('hidden');
         });
         document.getElementById('locate-btn').addEventListener('click', () => this.centerOnUser());
         document.getElementById('report-modal-close').addEventListener('click', () => this.closeReportModal());
@@ -631,7 +650,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof firebase === 'undefined' || typeof maplibregl === 'undefined') {
             throw new Error("Required libraries (Firebase or MapLibre) not loaded. Check internet connection.");
         }
-        window.app = new AetherAtlas(firebaseConfig);
+        window.app = new AetherAtlas(window.firebaseConfig);
     } catch (e) {
         console.error("Critical Application Error:", e);
         alert(`Failed to start application: ${e.message}. Check console for details.`);
