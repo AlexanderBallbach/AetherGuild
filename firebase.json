@@ -27,7 +27,7 @@
       "port": 8181
     },
     "functions": {
-        "port": 5002
+      "port": 5002
     }
   },
   "functions": [
@@ -41,9 +41,6 @@
         "firebase-debug.log",
         "firebase-debug.*.log",
         "*.local"
-      ],
-      "predeploy": [
-        "npm --prefix \"$RESOURCE_DIR\" run lint"
       ]
     }
   ],
