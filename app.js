@@ -12,8 +12,6 @@ class AetherAtlas {
         this.currentView = 'atlas';
         this.activeOverlays = new Set();
         this.isStyleLoaded = false;
-        this.activeOverlays = new Set();
-        this.isStyleLoaded = false;
         this.allReports = []; // Store all reports for filtering
 
         this.keys = { ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false, w: false, a: false, s: false, d: false };
@@ -35,7 +33,7 @@ class AetherAtlas {
             },
             overlays: {
                 'Infrastructure': [
-                    // Dynamic Overpass Layers - Refined queries
+                    // Dynamic Overpass Layers
                     { name: 'Power Grid', id: 'power', type: 'overpass', query: 'power=line', color: '#00ffff' },
                     { name: 'Rail Network', id: 'rail', type: 'overpass', query: 'railway=rail', color: '#ffaa00' },
                     { name: 'Telecoms', id: 'telecom', type: 'overpass', query: 'man_made=tower', color: '#ff0055' }
@@ -44,7 +42,6 @@ class AetherAtlas {
                     { name: 'Waterways', id: 'water', type: 'overpass', query: 'waterway~"river|canal"', color: '#00d9ff' }
                 ],
                 'Urban': [
-                    // New Business/Feature Labels (POIs)
                     { name: 'Local Features', id: 'pois', type: 'overpass', query: 'amenity', minzoom: 15, color: '#ffffff' }
                 ],
                 'Labels': [
@@ -57,26 +54,14 @@ class AetherAtlas {
         this.attachEventListeners();
         this.listenForAuthStateChanges();
 
-        window.onload = () => {
-            this.initMapView();
-            feather.replace();
-        };
+        // Initialize immediately
+        this.initMapView();
     }
 
     initFirebase(config) {
         if (!firebase.apps.length) firebase.initializeApp(config);
         this.auth = firebase.auth();
         this.db = firebase.firestore();
-
-        // This block is now commented out to prioritize the live database
-        // if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
-        //     try {
-        //         this.db.useEmulator("localhost", 8181);
-        //         this.auth.useEmulator("http://localhost:9199");
-        //         console.log("Connected to Local Emulators");
-        //     } catch (e) { console.warn("Emulator connection skipped:", e); }
-        // }
-
         console.log("Connecting to LIVE Firebase backend.");
         this.wiki.db = this.db;
     }
@@ -99,7 +84,6 @@ class AetherAtlas {
             this.reapplyAllOverlays();
             this.initUIControls();
             this.initKeyboardControls();
-            // this.startPhysicsLoop();
 
             // Force resize to ensure flex layout is respected
             setTimeout(() => {
@@ -124,38 +108,24 @@ class AetherAtlas {
         const canvas = this.map.getCanvas();
         canvas.addEventListener('wheel', (e) => {
             e.preventDefault();
-
             const rect = canvas.getBoundingClientRect();
-            const point = new maplibregl.Point(
-                e.clientX - rect.left,
-                e.clientY - rect.top
-            );
-
+            const point = new maplibregl.Point(e.clientX - rect.left, e.clientY - rect.top);
             const lngLat = this.map.unproject(point);
-            const delta = -e.deltaY / 400; // Adjust sensitivity
+            const delta = -e.deltaY / 400;
             const targetZoom = this.map.getZoom() + delta;
-
             this.map.easeTo({
                 zoom: targetZoom,
                 around: lngLat,
-                duration: 100, // Short duration for responsive feel
+                duration: 100,
                 easing: t => t
             });
         }, { passive: false });
     }
 
-
-
-
-
     initUIControls() {
         this.initLayerControlUI();
         this.initZoomControl();
-        // Native map controls are now themed via CSS
-        // We rely on CSS to position them or add custom if needed. 
-        // MapLibre's default 'top-right' conflicts with our Top Bar? 
-        // Top bar is height 64px. MapLibre controls start at top. 
-        // We can use CSS to push them down. 
+
         this.map.addControl(new maplibregl.NavigationControl({
             visualizePitch: true,
             showCompass: true,
@@ -166,6 +136,9 @@ class AetherAtlas {
         this.map.addControl(scale, 'bottom-right');
 
         this.initLocationSearch();
+
+        // Initialize icons for injected content
+        setTimeout(() => feather.replace(), 0);
     }
 
     initLocationSearch() {
@@ -214,7 +187,6 @@ class AetherAtlas {
             }, 300);
         });
 
-        // Hide suggestions on outside click
         document.addEventListener('click', (e) => {
             if (!input.contains(e.target) && !suggestionsBox.contains(e.target)) {
                 suggestionsBox.classList.add('hidden');
@@ -279,12 +251,8 @@ class AetherAtlas {
 
         if (isChecked) {
             if (!this.map.getSource(layerId)) {
-                this.map.addSource(layerId, {
-                    type: 'geojson',
-                    data: { type: 'FeatureCollection', features: [] }
-                });
+                this.map.addSource(layerId, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
 
-                // Determine styling based on layer type
                 let type = 'line';
                 let paint = { 'line-color': layerConf.color, 'line-width': 2 };
 
@@ -298,29 +266,13 @@ class AetherAtlas {
                     };
                 }
 
-                this.map.addLayer({
-                    id: layerId,
-                    type: type,
-                    source: layerId,
-                    paint: paint
-                });
+                this.map.addLayer({ id: layerId, type: type, source: layerId, paint: paint });
 
                 if (layerConf.id === 'pois') {
                     this.map.addLayer({
-                        id: `${layerId}-label`,
-                        type: 'symbol',
-                        source: layerId,
-                        layout: {
-                            'text-field': ['get', 'name'],
-                            'text-size': 10,
-                            'text-offset': [0, 1],
-                            'text-anchor': 'top'
-                        },
-                        paint: {
-                            'text-color': '#ffffff',
-                            'text-halo-color': '#000000',
-                            'text-halo-width': 1
-                        }
+                        id: `${layerId}-label`, type: 'symbol', source: layerId,
+                        layout: { 'text-field': ['get', 'name'], 'text-size': 10, 'text-offset': [0, 1], 'text-anchor': 'top' },
+                        paint: { 'text-color': '#ffffff', 'text-halo-color': '#000000', 'text-halo-width': 1 }
                     });
                 }
             }
@@ -328,12 +280,7 @@ class AetherAtlas {
             if (layerConf.id === 'pois') this.map.setLayoutProperty(`${layerId}-label`, 'visibility', 'visible');
 
             this.fetchOverpassData(layerConf);
-
-            this.map.on('moveend', () => {
-                if (this.activeOverlays.has(layerConf.id)) {
-                    this.fetchOverpassData(layerConf);
-                }
-            });
+            this.map.on('moveend', () => { if (this.activeOverlays.has(layerConf.id)) this.fetchOverpassData(layerConf); });
 
         } else {
             if (this.map.getLayer(layerId)) {
@@ -351,24 +298,11 @@ class AetherAtlas {
         const bounds = this.map.getBounds();
         const bbox = `${bounds.getSouth()},${bounds.getWest()},${bounds.getNorth()},${bounds.getEast()}`;
 
-        const query = `
-            [out:json][timeout:25];
-            (
-              way[${layerConf.query}](${bbox});
-              node[${layerConf.query}](${bbox});
-              relation[${layerConf.query}](${bbox});
-            );
-            out body;
-            >;
-            out skel qt;
-        `;
+        const query = `[out:json][timeout:25];(way[${layerConf.query}](${bbox});node[${layerConf.query}](${bbox});relation[${layerConf.query}](${bbox}););out body;>;out skel qt;`;
 
         try {
             console.log(`Fetching Overpass data for ${layerConf.name}...`);
-            const response = await fetch('https://overpass-api.de/api/interpreter', {
-                method: 'POST',
-                body: query
-            });
+            const response = await fetch('https://overpass-api.de/api/interpreter', { method: 'POST', body: query });
             const data = await response.json();
             const geojson = osmtogeojson(data);
             const source = this.map.getSource(`overpass-${layerConf.id}`);
@@ -388,10 +322,7 @@ class AetherAtlas {
             const layerConf = Object.values(this.layerConfig.overlays).flat().find(l => l.id === layerId);
             if (layerConf) {
                 hasVisibleLayers = true;
-                html += `<div class="legend-item">
-                            <span class="legend-color" style="background-color: ${layerConf.color || '#fff'}"></span>
-                            <span>${layerConf.name}</span>
-                         </div>`;
+                html += `<div class="legend-item"><span class="legend-color" style="background-color: ${layerConf.color || '#fff'}"></span><span>${layerConf.name}</span></div>`;
             }
         });
 
@@ -474,12 +405,9 @@ class AetherAtlas {
         document.getElementById('set-location-btn').addEventListener('click', () => this.toggleLocationSelectMode());
         document.getElementById('report-form').addEventListener('submit', (e) => this.handleReportSubmit(e));
 
-        // User Menu Toggle
         document.getElementById('user-menu-btn').addEventListener('click', () => {
             document.getElementById('user-dropdown').classList.toggle('hidden');
         });
-
-        // Settings (Placeholder)
         document.getElementById('settings-btn').addEventListener('click', () => {
             alert('Settings coming soon.');
         });
@@ -502,10 +430,7 @@ class AetherAtlas {
                 else if (reportCount >= 1) rank = "Observer";
             } catch (e) { console.log("Error fetching user rank:", e); }
 
-            // Update Avatar
             if (userAvatar) userAvatar.textContent = rank.substring(0, 2).toUpperCase();
-
-            // Inject Dropdown Content
             if (authSection) {
                 authSection.innerHTML = `
                     <div style="padding:16px; min-width:240px;">
@@ -534,6 +459,13 @@ class AetherAtlas {
         }
     }
 
+    listenForAuthStateChanges() {
+        this.auth.onAuthStateChanged(user => {
+            this.user = user;
+            this.updateAuthUI(!!user);
+        });
+    }
+
     async loadReportsFromFirestore() {
         if (!this.map.getSource('reports')) return;
         try {
@@ -552,13 +484,7 @@ class AetherAtlas {
                     }
                 };
             });
-
-            // Filter initially? Or just show all?
-            this.map.getSource('reports').setData({
-                type: 'FeatureCollection',
-                features: this.allReports
-            });
-
+            this.map.getSource('reports').setData({ type: 'FeatureCollection', features: this.allReports });
         } catch (error) {
             console.error("Error loading reports:", error);
             this.loadMockReports();
@@ -573,53 +499,34 @@ class AetherAtlas {
             { type: 'Feature', geometry: { type: 'Point', coordinates: [31.1342, 29.9792] }, properties: { title: "Pyramid Signal (1920)", color: "#ffaa00", details: "Ancient signal.", year: 1920 } },
             { type: 'Feature', geometry: { type: 'Point', coordinates: [-104.9903, 39.7392] }, properties: { title: "Denver Airport (1995)", color: "#00aaff", details: "Conspiracy hub.", year: 1995 } }
         ];
-
         this.allReports = mockData.map(d => ({ ...d, properties: { ...d.properties, id: Math.random().toString(36) } }));
-
-        this.map.getSource('reports').setData({
-            type: 'FeatureCollection',
-            features: this.allReports
-        });
+        this.map.getSource('reports').setData({ type: 'FeatureCollection', features: this.allReports });
     }
 
     centerOnUser() {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(pos => {
                 this.map.flyTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 12 });
-            }, err => {
-                console.error("Geolocation error:", err);
-                alert("Could not get location: " + err.message);
-            });
-        } else {
-            alert("Geolocation not supported by this browser.");
-        }
+            }, err => { alert("Could not get location: " + err.message); });
+        } else { alert("Geolocation not supported."); }
     }
 
     switchView(viewName) {
         this.currentView = viewName;
-        const mapContainer = document.getElementById('map-container');
         const wikiContainer = document.getElementById('wiki-container');
-
-        // Atlas View
         if (viewName === 'atlas') {
             document.getElementById('view-switch-atlas').classList.add('active');
             document.getElementById('view-switch-wiki').classList.remove('active');
             wikiContainer.classList.add('hidden');
-            // mapContainer.classList.remove('hidden'); // Map always stays visible as background
             if (this.map) this.map.resize();
-        }
-        // Wiki View
-        else if (viewName === 'wiki') {
+        } else if (viewName === 'wiki') {
             document.getElementById('view-switch-wiki').classList.add('active');
             document.getElementById('view-switch-atlas').classList.remove('active');
             wikiContainer.classList.remove('hidden');
-            // mapContainer.classList.add('hidden'); // Optional: blur it?
         }
     }
 
-    openReportModal() {
-        document.getElementById('report-modal').classList.remove('hidden');
-    }
+    openReportModal() { document.getElementById('report-modal').classList.remove('hidden'); }
 
     closeReportModal() {
         document.getElementById('report-modal').classList.add('hidden');
@@ -631,8 +538,6 @@ class AetherAtlas {
         this.isSelectingLocation = !this.isSelectingLocation;
         const addReportBtn = document.getElementById('add-report-btn');
         document.getElementById('map-container').style.cursor = this.isSelectingLocation ? 'crosshair' : '';
-
-        // Visual feedback
         if (addReportBtn) {
             if (this.isSelectingLocation) {
                 addReportBtn.classList.add('btn-secondary');
@@ -644,11 +549,8 @@ class AetherAtlas {
                 addReportBtn.innerHTML = '<i data-feather="plus-circle"></i> Report';
             }
         }
-
         if (this.isSelectingLocation) this.closeReportModal();
     }
-
-    // ... Legacy/Other methods maintained below ...
 
     onMapClick(e) {
         if (this.isSelectingLocation) {
@@ -658,26 +560,6 @@ class AetherAtlas {
             this.openReportModal();
         }
     }
-
-    initCompass() {
-        // Compass logic handled by built-in control now, but keeping for reference if asked.
-        // Disabling custom loop if we rely on standard UI.
-    }
-
-    // Remaining logic
-    handleReportSubmit(e) { /* ... same ... */ e.preventDefault(); /* ... */ } // Placeholder to ensure replacement matches logic flow
-
-    /* ... Re-inserting other methods ... */
-
-    // We need to keep initKeyboardControls, startPhysicsLoop, etc.
-    // NOTE: This ReplaceFileContent is replacing a large chunk.
-    // I need to be careful to include the REST of the file or use endLine carefully.
-    // The previous view showed lines up to 750.
-    // I am targeting initUIControls (line 151) down to the end of the class. 
-    // This is risky if I don't paste everything back.
-    // Better strategy: Replace specific methods one by one or blocks.
-
-    // I will REPLACE from initUIControls (151) to end of class (747).
 
     attachMapEventListeners() {
         this.map.on('click', (e) => this.onMapClick(e));
@@ -704,16 +586,11 @@ class AetherAtlas {
                 <div style="min-width:200px">
                     <h4 style="color: ${props.color || '#fff'}; margin: 0 0 8px;">${props.title}</h4>
                     <p style="font-size: 13px; margin-bottom:8px;">${props.details}</p>
-                    <button class="btn btn-secondary btn-sm w-100" onclick="window.app.switchView('wiki'); window.app.wiki.loadArticle('${props.title.replace(/ /g, '_')}');">
-                        View Article
-                    </button>
+                    <button class="btn btn-secondary btn-sm w-100" onclick="window.app.switchView('wiki'); window.app.wiki.loadArticle('${props.title.replace(/ /g, '_')}');">View Article</button>
                     ${props.timestamp ? `<div style="font-size:10px; color:#aaa; margin-top:4px;">${new Date(props.timestamp.seconds * 1000).toLocaleDateString()}</div>` : ''}
                 </div>`;
-
             new maplibregl.Popup({ className: 'custom-popup', maxWidth: '300px' })
-                .setLngLat(coordinates)
-                .setHTML(popupContent)
-                .addTo(this.map);
+                .setLngLat(coordinates).setHTML(popupContent).addTo(this.map);
         });
     }
 
@@ -747,10 +624,16 @@ class AetherAtlas {
         document.addEventListener('keydown', (e) => { if (this.keys.hasOwnProperty(e.key)) this.keys[e.key] = true; });
         document.addEventListener('keyup', (e) => { if (this.keys.hasOwnProperty(e.key)) this.keys[e.key] = false; });
     }
-
-    startPhysicsLoop() {
-        // ... kept for fallback ... 
-    }
 }
 
-document.addEventListener('DOMContentLoaded', () => { window.app = new AetherAtlas(firebaseConfig); });
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        if (typeof firebase === 'undefined' || typeof maplibregl === 'undefined') {
+            throw new Error("Required libraries (Firebase or MapLibre) not loaded. Check internet connection.");
+        }
+        window.app = new AetherAtlas(firebaseConfig);
+    } catch (e) {
+        console.error("Critical Application Error:", e);
+        alert(`Failed to start application: ${e.message}. Check console for details.`);
+    }
+});
