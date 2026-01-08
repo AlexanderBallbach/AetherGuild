@@ -222,6 +222,243 @@ class AetherAtlas {
         });
     }
 
+    reapplyAllOverlays() {
+        this.addReportsLayer();
+        this.loadReportsFromFirestore().catch(e => this.loadMockReports());
+
+        Object.values(this.layerConfig.overlays).flat().forEach(layer => {
+            if (layer.url && !this.map.getSource(layer.id)) {
+                this.map.addSource(layer.id, {
+                    type: 'raster',
+                    tiles: [layer.url.replace('{s}', 'a')],
+                    tileSize: 256
+                });
+            }
+            if (layer.url && !this.map.getLayer(layer.id)) {
+                this.map.addLayer({
+                    id: layer.id,
+                    type: 'raster',
+                    source: layer.id,
+                    paint: layer.paint,
+                    layout: {
+                        visibility: this.activeOverlays.has(layer.id) ? 'visible' : 'none'
+                    }
+                });
+            }
+        });
+    }
+
+    addReportsLayer() {
+        if (this.map.getSource('reports')) return;
+        this.map.addSource('reports', {
+            type: 'geojson',
+            data: { type: 'FeatureCollection', features: [] },
+            cluster: true, clusterMaxZoom: 14, clusterRadius: 50
+        });
+        this.map.addLayer({ id: 'clusters', type: 'circle', source: 'reports', filter: ['has', 'point_count'], paint: { 'circle-color': '#00aaff', 'circle-radius': 20, 'circle-stroke-width': 1, 'circle-stroke-color': '#fff' } });
+        this.map.addLayer({ id: 'cluster-count', type: 'symbol', source: 'reports', filter: ['has', 'point_count'], layout: { 'text-field': '{point_count_abbreviated}', 'text-font': ['Open Sans Bold'], 'text-size': 12 }, paint: { 'text-color': '#ffffff' } });
+        this.map.addLayer({ id: 'unclustered-point', type: 'circle', source: 'reports', filter: ['!', ['has', 'point_count']], paint: { 'circle-color': ['get', 'color'], 'circle-radius': 8, 'circle-stroke-width': 2, 'circle-stroke-color': '#fff' } });
+    }
+
+    handleLayerToggle(layerId, isChecked) {
+        const layerConf = Object.values(this.layerConfig.overlays).flat().find(l => l.id === layerId);
+        if (!layerConf) return;
+
+        if (layerConf.action === 'toggle_labels') this.toggleLabels(isChecked);
+        else if (layerConf.type === 'overpass') this.toggleOverpassLayer(layerConf, isChecked);
+        else if (layerConf.id) this.map.setLayoutProperty(layerId, 'visibility', isChecked ? 'visible' : 'none');
+
+        if (isChecked) this.activeOverlays.add(layerId);
+        else this.activeOverlays.delete(layerId);
+
+        this.updateLegend();
+    }
+
+    async toggleOverpassLayer(layerConf, isChecked) {
+        const layerId = `overpass-${layerConf.id}`;
+
+        if (isChecked) {
+            if (!this.map.getSource(layerId)) {
+                this.map.addSource(layerId, {
+                    type: 'geojson',
+                    data: { type: 'FeatureCollection', features: [] }
+                });
+
+                // Determine styling based on layer type
+                let type = 'line';
+                let paint = { 'line-color': layerConf.color, 'line-width': 2 };
+
+                if (layerConf.id === 'telecom' || layerConf.id === 'pois') {
+                    type = 'circle';
+                    paint = {
+                        'circle-color': layerConf.color,
+                        'circle-radius': layerConf.id === 'pois' ? 3 : 5,
+                        'circle-stroke-width': 1,
+                        'circle-stroke-color': '#000'
+                    };
+                }
+
+                this.map.addLayer({
+                    id: layerId,
+                    type: type,
+                    source: layerId,
+                    paint: paint
+                });
+
+                if (layerConf.id === 'pois') {
+                    this.map.addLayer({
+                        id: `${layerId}-label`,
+                        type: 'symbol',
+                        source: layerId,
+                        layout: {
+                            'text-field': ['get', 'name'],
+                            'text-size': 10,
+                            'text-offset': [0, 1],
+                            'text-anchor': 'top'
+                        },
+                        paint: {
+                            'text-color': '#ffffff',
+                            'text-halo-color': '#000000',
+                            'text-halo-width': 1
+                        }
+                    });
+                }
+            }
+            this.map.setLayoutProperty(layerId, 'visibility', 'visible');
+            if (layerConf.id === 'pois') this.map.setLayoutProperty(`${layerId}-label`, 'visibility', 'visible');
+
+            this.fetchOverpassData(layerConf);
+
+            this.map.on('moveend', () => {
+                if (this.activeOverlays.has(layerConf.id)) {
+                    this.fetchOverpassData(layerConf);
+                }
+            });
+
+        } else {
+            if (this.map.getLayer(layerId)) {
+                this.map.setLayoutProperty(layerId, 'visibility', 'none');
+                if (layerConf.id === 'pois') this.map.setLayoutProperty(`${layerId}-label`, 'visibility', 'none');
+            }
+        }
+    }
+
+    async fetchOverpassData(layerConf) {
+        const zoom = this.map.getZoom();
+        const minZoom = layerConf.minzoom || 10;
+        if (zoom < minZoom) return;
+
+        const bounds = this.map.getBounds();
+        const bbox = `${bounds.getSouth()},${bounds.getWest()},${bounds.getNorth()},${bounds.getEast()}`;
+
+        const query = `
+            [out:json][timeout:25];
+            (
+              way[${layerConf.query}](${bbox});
+              node[${layerConf.query}](${bbox});
+              relation[${layerConf.query}](${bbox});
+            );
+            out body;
+            >;
+            out skel qt;
+        `;
+
+        try {
+            console.log(`Fetching Overpass data for ${layerConf.name}...`);
+            const response = await fetch('https://overpass-api.de/api/interpreter', {
+                method: 'POST',
+                body: query
+            });
+            const data = await response.json();
+            const geojson = osmtogeojson(data);
+            const source = this.map.getSource(`overpass-${layerConf.id}`);
+            if (source) source.setData(geojson);
+        } catch (error) { console.error("Overpass fetch error:", error); }
+    }
+
+    updateLegend() {
+        const container = document.getElementById('legend-content');
+        const legendPanel = document.getElementById('dynamic-legend');
+        if (!container || !legendPanel) return;
+
+        let html = '';
+        let hasVisibleLayers = false;
+
+        this.activeOverlays.forEach(layerId => {
+            const layerConf = Object.values(this.layerConfig.overlays).flat().find(l => l.id === layerId);
+            if (layerConf) {
+                hasVisibleLayers = true;
+                html += `<div class="legend-item">
+                            <span class="legend-color" style="background-color: ${layerConf.color || '#fff'}"></span>
+                            <span>${layerConf.name}</span>
+                         </div>`;
+            }
+        });
+
+        if (this.map.getLayer('clusters') && this.map.getLayoutProperty('clusters', 'visibility') !== 'none') {
+            hasVisibleLayers = true;
+            html += `<div class="legend-item"><span class="legend-color" style="background-color: #00aaff"></span><span>Reports (Cluster)</span></div>`;
+        }
+
+        container.innerHTML = html;
+        legendPanel.style.display = hasVisibleLayers ? 'block' : 'none';
+        legendPanel.classList.toggle('hidden', !hasVisibleLayers);
+    }
+
+    toggleLabels(isVisible) {
+        const layers = this.map.getStyle().layers;
+        layers.forEach(layer => {
+            if (layer.type === 'symbol') {
+                this.map.setLayoutProperty(layer.id, 'visibility', isVisible ? 'visible' : 'none');
+            }
+        });
+    }
+
+    changeBasemap(styleUrl) {
+        this.isStyleLoaded = false;
+        this.map.setStyle(styleUrl);
+        setTimeout(() => this.isStyleLoaded = true, 500);
+    }
+
+    initLayerControlUI() {
+        const container = document.getElementById('layer-tree-container');
+        let html = '<div id="layer-tree-control" class="map-overlay-panel" style="display:block;"><h4 class="overlay-title">Atlas Layers</h4>';
+
+        html += `<div class="layer-group"><h5 class="layer-group-title">${this.layerConfig.basemaps.groupName}</h5>`;
+        Object.entries(this.layerConfig.basemaps.layers).forEach(([name, url], index) => {
+            const checked = index === 0 ? 'checked' : '';
+            html += `<label class="layer-option"><input type="radio" name="basemap" value="${url}" ${checked}> ${name}</label>`;
+        });
+        html += `</div>`;
+
+        Object.entries(this.layerConfig.overlays).forEach(([groupName, layers]) => {
+            html += `<div class="layer-group"><h5 class="layer-group-title">${groupName}</h5>`;
+            layers.forEach(layer => {
+                const checked = layer.visible ? 'checked' : '';
+                if (layer.visible) this.activeOverlays.add(layer.id);
+                html += `<label class="layer-option"><input type="checkbox" name="overlay" value="${layer.id}" ${checked}> ${layer.name}</label>`;
+            });
+            html += `</div>`;
+        });
+
+        html += '</div>';
+        container.innerHTML = html;
+
+        container.addEventListener('change', (e) => {
+            const el = e.target;
+            if (el.name === 'basemap') this.changeBasemap(el.value);
+            else if (el.name === 'overlay') this.handleLayerToggle(el.value, el.checked);
+        });
+    }
+
+    initZoomControl() {
+        const container = document.getElementById('zoom-control-container');
+        if (!container) return;
+        container.innerHTML = `<button id="zoom-in" class="hud-btn" style="width:32px; height:32px; font-size:18px;">+</button><button id="zoom-out" class="hud-btn" style="width:32px; height:32px; font-size:18px;">-</button>`;
+        document.getElementById('zoom-in').addEventListener('click', () => this.map.zoomIn());
+        document.getElementById('zoom-out').addEventListener('click', () => this.map.zoomOut());
+    }
+
     attachEventListeners() {
         document.getElementById('view-switch-atlas').addEventListener('click', () => this.switchView('atlas'));
         document.getElementById('view-switch-wiki').addEventListener('click', () => this.switchView('wiki'));
@@ -294,6 +531,67 @@ class AetherAtlas {
                     </div>`;
             }
             if (addReportBtn) addReportBtn.style.display = 'none';
+        }
+    }
+
+    async loadReportsFromFirestore() {
+        if (!this.map.getSource('reports')) return;
+        try {
+            const snapshot = await this.db.collection('reports').get();
+            this.allReports = snapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    type: 'Feature',
+                    geometry: { type: 'Point', coordinates: [data.lng, data.lat] },
+                    properties: {
+                        id: doc.id,
+                        title: data.title,
+                        details: data.details,
+                        color: data.color || '#00aaff',
+                        timestamp: data.timestamp
+                    }
+                };
+            });
+
+            // Filter initially? Or just show all?
+            this.map.getSource('reports').setData({
+                type: 'FeatureCollection',
+                features: this.allReports
+            });
+
+        } catch (error) {
+            console.error("Error loading reports:", error);
+            this.loadMockReports();
+        }
+    }
+
+    loadMockReports() {
+        if (!this.map.getSource('reports')) return;
+        const mockData = [
+            { type: 'Feature', geometry: { type: 'Point', coordinates: [-74.006, 40.7128] }, properties: { title: "NYC Anomaly (2024)", color: "#ff0000", details: "Recent event.", year: 2024 } },
+            { type: 'Feature', geometry: { type: 'Point', coordinates: [-0.1276, 51.5074] }, properties: { title: "London Fog (1952)", color: "#aaaaaa", details: "Historical event.", year: 1952 } },
+            { type: 'Feature', geometry: { type: 'Point', coordinates: [31.1342, 29.9792] }, properties: { title: "Pyramid Signal (1920)", color: "#ffaa00", details: "Ancient signal.", year: 1920 } },
+            { type: 'Feature', geometry: { type: 'Point', coordinates: [-104.9903, 39.7392] }, properties: { title: "Denver Airport (1995)", color: "#00aaff", details: "Conspiracy hub.", year: 1995 } }
+        ];
+
+        this.allReports = mockData.map(d => ({ ...d, properties: { ...d.properties, id: Math.random().toString(36) } }));
+
+        this.map.getSource('reports').setData({
+            type: 'FeatureCollection',
+            features: this.allReports
+        });
+    }
+
+    centerOnUser() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(pos => {
+                this.map.flyTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 12 });
+            }, err => {
+                console.error("Geolocation error:", err);
+                alert("Could not get location: " + err.message);
+            });
+        } else {
+            alert("Geolocation not supported by this browser.");
         }
     }
 
