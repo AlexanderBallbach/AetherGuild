@@ -11,16 +11,17 @@ AETHERIC INTERFACE DESIGN SYSTEM V2.5
 :root {
     --font-family-base: 'Exo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     --font-size-base: 16px;
-    
+
     /* Dark Theme */
     --theme-bg-primary: hsl(225, 10%, 12%);
-    --theme-bg-secondary: hsla(225, 10%, 18%, 0.9); 
+    --theme-bg-secondary: hsla(225, 10%, 18%, 0.9);
     --theme-text-primary: hsl(210, 15%, 90%);
     --theme-text-secondary: hsl(210, 15%, 60%);
     --theme-border-color: hsla(225, 10%, 40%, 0.5);
-    --theme-accent-primary: hsl(180, 100%, 50%); /* Cyan */
-    --theme-accent-glow: 0 0 10px hsla(180, 100%, 50%, 0.4);
-    --theme-glass-backdrop: blur(12px);
+    --theme-accent-primary: #00d9ff;
+    /* Cyan */
+    --theme-accent-glow: 0 0 5px rgba(0, 217, 255, 0.2);
+    --theme-glass-backdrop: blur(8px);
     --theme-input-bg: hsla(0, 0%, 0%, 0.3);
 }
 
@@ -35,52 +36,196 @@ body.light-theme {
 }
 
 /* --- RESETS --- */
-body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: var(--font-family-base); background-color: var(--theme-bg-primary); color: var(--theme-text-primary); transition: background-color 0.3s, color 0.3s; }
-* { box-sizing: border-box; }
-a { color: var(--theme-accent-primary); text-decoration: none; transition: all 0.2s; }
-a:hover { text-decoration: underline; text-shadow: var(--theme-accent-glow); }
+body,
+html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    overflow: hidden;
+    font-family: var(--font-family-base);
+    background-color: var(--theme-bg-primary);
+    color: var(--theme-text-primary);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+a {
+    color: var(--theme-accent-primary);
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+a:hover {
+    text-decoration: underline;
+    text-shadow: var(--theme-accent-glow);
+}
 
 /* --- LAYOUT --- */
-.app-container { display: flex; height: 100vh; }
-.sidebar { width: 300px; flex-shrink: 0; background-color: var(--theme-bg-secondary); backdrop-filter: var(--theme-glass-backdrop); border-right: 1px solid var(--theme-border-color); padding: 20px; display: flex; flex-direction: column; gap: 20px; z-index: 20; transition: background-color 0.3s, border-color 0.3s; }
-.main-view { flex-grow: 1; display: flex; flex-direction: column; position: relative; }
+.app-container {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+.sidebar {
+    background-color: var(--theme-bg-secondary);
+    backdrop-filter: var(--theme-glass-backdrop);
+    border-right: 1px solid var(--theme-border-color);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    z-index: 20;
+    overflow-y: auto;
+    pointer-events: auto;
+    /* Re-enable for sidebar */
+}
+
+.main-view {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+    z-index: 10;
+}
 
 /* --- HEADER --- */
-.main-header { padding: 16px 24px; border-bottom: 1px solid var(--theme-border-color); background-color: var(--theme-bg-secondary); backdrop-filter: var(--theme-glass-backdrop); display: flex; align-items: center; justify-content: space-between; z-index: 20; transition: background-color 0.3s, border-color 0.3s; }
-.search-container { position: relative; width: 100%; max-width: 600px; }
-#search-input { width: 100%; padding: 12px 16px 12px 44px; background-color: var(--theme-input-bg); color: var(--theme-text-primary); border: 1px solid var(--theme-border-color); border-radius: 4px; font-family: var(--font-family-base); font-size: 16px; transition: all 0.2s; }
-#search-input:focus { outline: none; border-color: var(--theme-accent-primary); box-shadow: var(--theme-accent-glow); background-color: var(--theme-bg-secondary); }
-.search-icon { position: absolute; top: 50%; left: 14px; transform: translateY(-50%); color: var(--theme-text-secondary); pointer-events: none; }
+.main-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--theme-border-color);
+    background-color: var(--theme-bg-secondary);
+    backdrop-filter: var(--theme-glass-backdrop);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 20;
+    pointer-events: auto;
+    /* Re-enable for header */
+}
+
+.content-area {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    display: block;
+    /* Ensure it doesn't collapse */
+}
+
+.search-container {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+}
+
+#search-input {
+    width: 100%;
+    padding: 12px 16px 12px 44px;
+    background-color: var(--theme-input-bg);
+    color: var(--theme-text-primary);
+    border: 1px solid var(--theme-border-color);
+    border-radius: 4px;
+    font-family: var(--font-family-base);
+    font-size: 16px;
+    transition: all 0.2s;
+}
+
+#search-input:focus {
+    outline: none;
+    border-color: var(--theme-accent-primary);
+    box-shadow: var(--theme-accent-glow);
+    background-color: var(--theme-bg-secondary);
+}
+
+.search-icon {
+    position: absolute;
+    top: 50%;
+    left: 14px;
+    transform: translateY(-50%);
+    color: var(--theme-text-secondary);
+    pointer-events: none;
+}
 
 /* --- MAP UI: LAYER TREE (Bottom Left) --- */
-.map-overlay-panel {
+#layer-tree-container {
     position: absolute;
-    bottom: 80px; 
+    top: 20px;
     left: 20px;
+    z-index: 1000;
+    pointer-events: none;
+    /* Allow clicks through empty space */
+}
+
+.map-overlay-panel {
+    /* Position is now handled by the parent container mostly */
+    pointer-events: auto;
     width: 280px;
     background-color: var(--theme-bg-secondary);
     backdrop-filter: var(--theme-glass-backdrop);
     border: 1px solid var(--theme-border-color);
     border-radius: 4px;
     padding: 16px;
-    z-index: 100;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
     max-height: calc(100vh - 250px);
     overflow-y: auto;
     transition: background-color 0.3s, border-color 0.3s;
 }
 
-.overlay-title { margin: 0 0 16px 0; color: var(--theme-accent-primary); text-transform: uppercase; letter-spacing: 1px; font-size: 14px; border-bottom: 1px solid var(--theme-border-color); padding-bottom: 8px; }
-.layer-group { margin-bottom: 16px; }
-.layer-group-title { margin: 0 0 8px 0; color: var(--theme-text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
-.layer-option { display: flex; align-items: center; gap: 10px; padding: 4px 0; cursor: pointer; font-size: 13px; transition: color 0.2s; }
-.layer-option:hover { color: var(--theme-text-primary); }
-.layer-option input { accent-color: var(--theme-accent-primary); cursor: pointer; }
+.overlay-title {
+    margin: 0 0 16px 0;
+    color: var(--theme-accent-primary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 14px;
+    border-bottom: 1px solid var(--theme-border-color);
+    padding-bottom: 8px;
+}
+
+.layer-group {
+    margin-bottom: 16px;
+}
+
+.layer-group-title {
+    margin: 0 0 8px 0;
+    color: var(--theme-text-secondary);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+}
+
+.layer-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 0;
+    cursor: pointer;
+    font-size: 13px;
+    transition: color 0.2s;
+}
+
+.layer-option:hover {
+    color: var(--theme-text-primary);
+}
+
+.layer-option input {
+    accent-color: var(--theme-accent-primary);
+    cursor: pointer;
+}
 
 /* --- MAP UI: ZOOM THROTTLE & COMPASS (Top Right) --- */
 #controls-top-right {
     position: absolute;
-    top: 80px; 
+    top: 80px;
     right: 20px;
     z-index: 100;
     display: flex;
@@ -98,8 +243,8 @@ a:hover { text-decoration: underline; text-shadow: var(--theme-accent-glow); }
     display: flex;
     flex-direction: column;
     align-items: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    height: 180px; 
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    height: 180px;
     width: 40px;
     transition: background-color 0.3s, border-color 0.3s;
 }
@@ -111,8 +256,10 @@ a:hover { text-decoration: underline; text-shadow: var(--theme-accent-glow); }
     width: 8px;
     height: 100%;
     background: transparent;
-    writing-mode: vertical-lr; /* Firefox */
-    direction: rtl; /* Up is positive */
+    writing-mode: vertical-lr;
+    /* Firefox */
+    direction: rtl;
+    /* Up is positive */
     cursor: ns-resize;
     margin: 10px 0;
 }
@@ -135,7 +282,8 @@ a:hover { text-decoration: underline; text-shadow: var(--theme-accent-glow); }
     background: var(--theme-accent-primary);
     border-radius: 50%;
     box-shadow: 0 0 10px var(--theme-accent-primary);
-    margin-left: -6px; /* Center thumb on track (since width is 8px) */
+    margin-left: -6px;
+    /* Center thumb on track (since width is 8px) */
     margin-top: 0;
 }
 
@@ -156,19 +304,66 @@ a:hover { text-decoration: underline; text-shadow: var(--theme-accent-glow); }
     box-shadow: 0 0 10px var(--theme-accent-primary);
 }
 
+/* --- MAP CONTROLS STYLING --- */
 .maplibregl-ctrl-group {
     background-color: var(--theme-bg-secondary) !important;
     border: 1px solid var(--theme-border-color) !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    backdrop-filter: var(--theme-glass-backdrop);
 }
+
 .maplibregl-ctrl button {
-    filter: invert(1);
+    background-color: transparent !important;
+    border: none !important;
+}
+
+.maplibregl-ctrl-icon {
+    filter: invert(1) brightness(2);
+    /* Make icons white/bright */
+}
+
+.maplibregl-ctrl button:hover {
+    background-color: var(--theme-accent-primary) !important;
+}
+
+.maplibregl-ctrl button:hover .maplibregl-ctrl-icon {
+    filter: invert(0);
+    /* Black icon on cyan bg */
+}
+
+/* Specific Compass Override */
+.maplibregl-ctrl-compass-arrow {
+    border-bottom-color: var(--theme-accent-primary) !important;
+}
+
+.maplibregl-ctrl button {
+    background-color: transparent !important;
+    border: none !important;
+}
+
+.maplibregl-ctrl-icon {
+    filter: invert(1) brightness(2);
+    /* Make icons white/bright */
+}
+
+.maplibregl-ctrl button:hover {
+    background-color: var(--theme-accent-primary) !important;
+}
+
+.maplibregl-ctrl button:hover .maplibregl-ctrl-icon {
+    filter: invert(0);
+    /* Black icon on cyan bg */
+}
+
+/* Specific Compass Override if needed */
+.maplibregl-ctrl-compass-arrow {
+    border-bottom-color: var(--theme-accent-primary) !important;
 }
 
 /* --- DYNAMIC LEGEND --- */
 #dynamic-legend {
     position: absolute;
-    bottom: 30px;
+    bottom: 70px;
     right: 20px;
     background-color: var(--theme-bg-secondary);
     backdrop-filter: var(--theme-glass-backdrop);
@@ -180,36 +375,216 @@ a:hover { text-decoration: underline; text-shadow: var(--theme-accent-glow); }
     min-width: 150px;
     transition: background-color 0.3s, border-color 0.3s;
 }
-.legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-.legend-color { width: 12px; height: 12px; border-radius: 50%; }
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
 
 /* --- MAP HUD (Bottom Left) --- */
-#map-hud { position: absolute; bottom: 20px; left: 20px; z-index: 100; display: flex; gap: 12px; align-items: center; pointer-events: none; }
-#coord-display, .map-tool-btn { pointer-events: auto; background-color: var(--theme-bg-secondary); backdrop-filter: var(--theme-glass-backdrop); border: 1px solid var(--theme-border-color); color: var(--theme-accent-primary); box-shadow: 0 4px 12px rgba(0,0,0,0.3); border-radius: 4px; transition: background-color 0.3s, border-color 0.3s, color 0.3s; }
-#coord-display { padding: 8px 12px; font-family: 'Courier New', monospace; font-weight: bold; font-size: 13px; letter-spacing: 1px; color: var(--theme-text-primary); }
-.map-tool-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; color: var(--theme-text-primary); }
-.map-tool-btn:hover, .map-tool-btn.active { color: var(--theme-accent-primary); border-color: var(--theme-accent-primary); box-shadow: var(--theme-accent-glow); }
+#map-hud {
+    position: absolute;
+    top: 20px;
+    left: 100px;
+    /* Offset to not overlap with layers button if expanding, or just list them */
+    left: 20px;
+    /* Wait, if both are left: 20px, they overlap. 
+       Layers button is #toggle-layers-btn which is likely in the header or elsewhere? 
+       Actually, #map-hud contains the locate button and coords. 
+       The Layer Tree container is usually hidden until toggled. 
+       Let's put Map HUD at top-left, and Layers Panel below it or to the side.
+       User said "closer to the top like the compass". 
+       Compass is Top-Right. 
+       Let's put HUD at Top-Left: 20px. 
+       Layer Tree acts as a dropdown.
+    */
+    top: 70px;
+    /* Below the potential header or buttons */
+    left: 20px;
+    z-index: 1000;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    pointer-events: none;
+}
+
+#coord-display,
+.map-tool-btn {
+    pointer-events: auto;
+    background-color: var(--theme-bg-secondary);
+    backdrop-filter: var(--theme-glass-backdrop);
+    border: 1px solid var(--theme-border-color);
+    color: var(--theme-accent-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+}
+
+#coord-display {
+    padding: 8px 12px;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    font-size: 13px;
+    letter-spacing: 1px;
+    color: var(--theme-text-primary);
+    min-width: 200px;
+    /* Prevent jitter */
+    text-align: center;
+}
+
+.map-tool-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--theme-text-primary);
+}
+
+.map-tool-btn:hover,
+.map-tool-btn.active {
+    color: var(--theme-accent-primary);
+    border-color: var(--theme-accent-primary);
+    box-shadow: var(--theme-accent-glow);
+}
 
 /* --- UTILITIES --- */
-.card { background-color: hsla(225, 10%, 18%, 0.6); border: 1px solid var(--theme-border-color); border-radius: 4px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); transition: background-color 0.3s, border-color 0.3s; }
-body.light-theme .card { background-color: hsla(210, 20%, 95%, 0.6); }
+.card {
+    background-color: hsla(225, 10%, 18%, 0.6);
+    border: 1px solid var(--theme-border-color);
+    border-radius: 4px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s, border-color 0.3s;
+}
 
-.btn { display: inline-block; padding: 10px 16px; font-family: var(--font-family-base); font-size: 14px; font-weight: 600; text-align: center; border: 1px solid transparent; border-radius: 4px; cursor: pointer; transition: all 0.2s ease; text-transform: uppercase; letter-spacing: 0.5px; }
-.btn-primary { background-color: var(--theme-accent-primary); color: #000; font-weight: 700; border: 1px solid var(--theme-accent-primary); }
-.btn-primary:hover { box-shadow: var(--theme-accent-glow); filter: brightness(1.1); }
-.btn-secondary { background-color: transparent; color: var(--theme-text-primary); border: 1px solid var(--theme-border-color); }
-.btn-secondary:hover { border-color: var(--theme-text-primary); }
+body.light-theme .card {
+    background-color: hsla(210, 20%, 95%, 0.6);
+}
 
-.form-control { width: 100%; padding: 10px; font-family: var(--font-family-base); background-color: var(--theme-input-bg); color: var(--theme-text-primary); border: 1px solid var(--theme-border-color); border-radius: 4px; transition: border-color 0.2s; }
-.form-control:focus { border-color: var(--theme-accent-primary); outline: none; }
+.btn {
+    display: inline-block;
+    padding: 10px 16px;
+    font-family: var(--font-family-base);
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
 
-.text-secondary { color: var(--theme-text-secondary); }
-.mb-1 { margin-bottom: 8px; } .mb-2 { margin-bottom: 16px; } .mt-1 { margin-top: 8px; }
+.btn-primary {
+    background-color: var(--theme-accent-primary);
+    color: #000;
+    font-weight: 700;
+    border: 1px solid var(--theme-accent-primary);
+}
+
+.btn-primary:hover {
+    box-shadow: var(--theme-accent-glow);
+    filter: brightness(1.1);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: var(--theme-text-primary);
+    border: 1px solid var(--theme-border-color);
+}
+
+.btn-secondary:hover {
+    border-color: var(--theme-text-primary);
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    font-family: var(--font-family-base);
+    background-color: var(--theme-input-bg);
+    color: var(--theme-text-primary);
+    border: 1px solid var(--theme-border-color);
+    border-radius: 4px;
+    transition: border-color 0.2s;
+}
+
+.form-control:focus {
+    border-color: var(--theme-accent-primary);
+    outline: none;
+}
+
+.text-secondary {
+    color: var(--theme-text-secondary);
+}
+
+.mb-1 {
+    margin-bottom: 8px;
+}
+
+.mb-2 {
+    margin-bottom: 16px;
+}
+
+.mt-1 {
+    margin-top: 8px;
+}
 
 /* Hide map container and wiki container based on view */
-#map-container, #wiki-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transition: opacity 0.3s ease; }
-#map-container { background-color: #0e0e0e; z-index: 1; }
-#map-container.hidden, #wiki-container.hidden { opacity: 0; pointer-events: none; z-index: -1; }
-#wiki-container { background-color: var(--theme-bg-primary); overflow-y: auto; transition: background-color 0.3s; }
-#wiki-content { padding: 40px; max-width: 900px; margin: 0 auto; }
-#search-results-container { display: none; }
+#map-container,
+#wiki-container {
+    transition: opacity 0.3s ease;
+}
+
+#map-container {
+    background-color: #0e0e0e;
+    z-index: 1;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#map-container.hidden,
+#wiki-container.hidden {
+    opacity: 0;
+    pointer-events: none;
+    z-index: -1;
+}
+
+#wiki-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--theme-bg-primary);
+    overflow-y: auto;
+    transition: background-color 0.3s;
+}
+
+#wiki-content {
+    padding: 40px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+#search-results-container {
+    display: none;
+}
+
+#compass-label {
+    display: none;
+}
