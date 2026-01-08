@@ -65,6 +65,11 @@ a:hover {
     text-shadow: var(--theme-accent-glow);
 }
 
+/* --- UTILITIES --- */
+.hidden {
+    display: none !important;
+}
+
 /* --- LAYOUT OVERHAUL: FULL SCREEN --- */
 .app-container {
     width: 100vw;
@@ -307,8 +312,7 @@ a:hover {
     bottom: 60px;
     left: 0;
     width: 250px;
-    display: none;
-    /* Toggled by JS */
+    /* Toggled by JS via .hidden class */
     /* Reuse map-overlay-panel styling essentially */
     background: var(--theme-bg-secondary);
     border: 1px solid var(--theme-border-color);
