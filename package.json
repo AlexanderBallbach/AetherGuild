@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "description": "**Version:** 2.2 (MapLibre Migration) **Status:** In Development **Founder:** Alexander Ballbach **Organization:** The Aether Guild",
   "main": "L.Terminator.js",
-  "test": "echo \"Error: no test specified\" && exit 1",
-  "build": "echo 'No build step required'"
-},
-"keywords": [],
-"author": "",
-"license": "ISC",
-"dependencies": {
-  "firebase-tools": "^15.1.0"
-}
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "echo 'No build step required'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "firebase-tools": "^15.1.0"
+  }
 }
